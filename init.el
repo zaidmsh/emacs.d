@@ -24,7 +24,6 @@
 ;; Initialize package
 (require 'package)
 (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-                         ("marmalade" . "http://marmalade-repo.org/packages/")
                          ("melpa" . "http://melpa.org/packages/")))
 (package-initialize)
 
@@ -42,35 +41,29 @@
   :config
   (which-key-mode))
 
-;; Auto-complete
-(use-package auto-complete
+;; Ivy
+(use-package ivy
   :ensure t
-  :init
-  (progn
-    (use-package auto-complete-config)
+  :config
+  (setq ivy-use-virtual-buffers t
+	ivy-count-format "%d/%d ")
+  (ivy-mode))
 
-    (define-key ac-complete-mode-map (kbd "C-n") 'ac-next)
-    (define-key ac-complete-mode-map (kbd "C-p") 'ac-previous)
+;; Counsel
+(use-package counsel
+  :ensure t)
 
-    (ac-set-trigger-key "TAB")
-    (ac-config-default)
-
-    (setq ac-delay 0.01)
-    (setq ac-use-menu-map t)
-    (setq ac-menu-height 50)
-    (setq ac-use-quick-help nil) 
-    (setq ac-ignore-case nil)
-    (setq ac-dwim t)
-    (setq ac-fuzzy-enable t)
-
-    (global-auto-complete-mode t)
-    ))
-
-;; on the fly syntax checking
-(use-package flycheck
+;; Smartparens ()
+(use-package smartparens
   :ensure t
-  :init
-  (global-flycheck-mode t))
+  :config
+  (smartparens-mode))
+
+;; Company
+(use-package company
+  :ensure t
+  :config
+  (global-company-mode))
 
 ;; Org-bullets
 (use-package org-bullets
@@ -78,15 +71,23 @@
   :config
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
-;; evil
-(use-package evil
+;; Solarized-theme
+(use-package zenburn-theme
   :ensure t
   :config
-  (evil-mode))
-
-;; zenburn-theme
-(use-package solarized-theme
-  :ensure t
-  :config
-  (load-theme 'solarized-dark t))
+  (load-theme 'zenburn t))
 ;;;
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(package-selected-packages
+   (quote
+    (ivy zenburn-theme zenburn-them smartparens org-bullets which-key use-package))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
