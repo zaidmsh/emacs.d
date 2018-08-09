@@ -85,7 +85,7 @@
 (use-package solarized-theme
   :ensure t
   :config
-  (load-theme 'solarized-light t))
+  (load-theme 'solarized-dark t))
 
 ;; Golang
 (use-package go-mode
@@ -107,8 +107,35 @@
 (use-package dimmer
   :ensure t
   :config
-  (setq dimmer-fraction 0.50)
+  (setq dimmer-fraction 0.20)
   (dimmer-mode))
+
+;; minimap
+(use-package minimap
+  :ensure t
+  :config
+  (setq minimap-window-location "right")
+  (minimap-mode))
+
+(use-package smooth-scroll
+  :ensure t
+  :config
+  (smooth-scroll-mode))
+
+;; Dashboard
+(use-package dashboard
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook))
+
+;; Multiple-cursors
+(use-package multiple-cursors
+  :ensure t
+  :config
+  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
 
 ;;;
 (custom-set-variables
@@ -118,7 +145,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (dimmer company-go go-mode solarized-theme ivy zenburn-theme zenburn-them smartparens org-bullets which-key use-package))))
+    (multiple-cursors smooth-scroll minimap dashboard dimmer company-go go-mode solarized-theme ivy zenburn-theme zenburn-them smartparens org-bullets which-key use-package))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
