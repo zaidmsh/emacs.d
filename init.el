@@ -53,15 +53,17 @@
   :config
   (which-key-mode))
 
-;; Ivy
-(use-package ivy
-  :ensure t
+;; Ido
+(setq ido-everywhere t)
+(ido-mode)
+
+;; helm
+(use-package helm
+  :bind
+  ("M-x" . helm-M-x)
+  ("C-x C-f" . helm-find-files)
   :config
-  (setq ivy-use-virtual-buffers t
-	ivy-count-format "%d/%d ")
-  (use-package counsel
-    :ensure t)
-  (ivy-mode))
+  (helm-autoresize-mode))
 
 ;; Smartparens ()
 (use-package smartparens
@@ -110,13 +112,6 @@
   (setq dimmer-fraction 0.20)
   (dimmer-mode))
 
-;; minimap
-(use-package minimap
-  :ensure t
-  :config
-  (setq minimap-window-location "right")
-  (minimap-mode))
-
 (use-package smooth-scroll
   :ensure t
   :config
@@ -131,11 +126,41 @@
 ;; Multiple-cursors
 (use-package multiple-cursors
   :ensure t
+  :bind
+  ("C-S-c C-S-c" . mc/edit-lines)
+  ("C->" . mc/mark-next-like-this)
+  ("C-<" . mc/mark-previous-like-this)
+  ("C-c C->" . mc/mark-all-like-this))
+
+;; Ace window
+(use-package ace-window
+  :ensure t
   :config
-  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
+  (setq aw-dispatch-always t)
+  (defvar aw-dispatch-alist
+  '((?x aw-delete-window "Delete Window")
+	(?m aw-swap-window "Swap Windows")
+	(?M aw-move-window "Move Window")
+	(?j aw-switch-buffer-in-window "Select Buffer")
+	(?n aw-flip-window)
+	(?u aw-switch-buffer-other-window "Switch Buffer Other Window")
+	(?c aw-split-window-fair "Split Fair Window")
+	(?v aw-split-window-vert "Split Vert Window")
+	(?h aw-split-window-horz "Split Horz Window")
+	(?o delete-other-windows "Delete Other Windows")
+	(?? aw-show-dispatch-help))
+  "List of actions for `aw-dispatch-default'.")
+  (global-set-key (kbd "C-c w") 'ace-window))
+
+
+;; (which-key-add-key-based-replacements "C-c f" "file")
+;; (progn
+;;   ;; define a prefix keymap
+;;   (define-prefix-command 'my-window-map)
+;;   (define-key my-window-map (kbd "d") 'delete-window)
+;;   )
+
+;; (global-set-key (kbd "C-c w") my-window-map)
 
 ;;;
 (custom-set-variables
@@ -145,7 +170,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (multiple-cursors smooth-scroll minimap dashboard dimmer company-go go-mode solarized-theme ivy zenburn-theme zenburn-them smartparens org-bullets which-key use-package))))
+    (helm ace-window multiple-cursors smooth-scroll minimap dashboard dimmer company-go go-mode solarized-theme zenburn-theme zenburn-them smartparens org-bullets which-key use-package))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
