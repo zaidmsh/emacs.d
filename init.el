@@ -65,7 +65,11 @@
   :config
   (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
-;; Ivy
+;; Ido
+(setq ido-everywhere t)
+(ido-mode)
+
+;; helm
 (use-package helm
   :bind
   ("M-x" . helm-M-x)
@@ -117,26 +121,53 @@
   (setq dimmer-fraction 0.20)
   (dimmer-mode))
 
+(use-package smooth-scroll
+  :ensure t
+  :config
+  (smooth-scroll-mode))
+
+;; Dashboard
+(use-package dashboard
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook))
+
 ;; Multiple-cursors
 (use-package multiple-cursors
+  :ensure t
   :bind
   ("C-S-c C-S-c" . mc/edit-lines)
   ("C->" . mc/mark-next-like-this)
   ("C-<" . mc/mark-previous-like-this)
   ("C-c C-<" . mc/mark-all-like-this))
   
-;;;
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(package-selected-packages
-   (quote
-    (pixel-scroll multiple-cursors smooth-scroll minimap dashboard dimmer company-go go-mode solarized-theme ivy zenburn-theme zenburn-them smartparens org-bullets which-key use-package))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+
+;; Ace window
+(use-package ace-window
+  :ensure t
+  :config
+  (setq aw-dispatch-always t)
+  (defvar aw-dispatch-alist
+  '((?x aw-delete-window "Delete Window")
+	(?m aw-swap-window "Swap Windows")
+	(?M aw-move-window "Move Window")
+	(?j aw-switch-buffer-in-window "Select Buffer")
+	(?n aw-flip-window)
+	(?u aw-switch-buffer-other-window "Switch Buffer Other Window")
+	(?c aw-split-window-fair "Split Fair Window")
+	(?v aw-split-window-vert "Split Vert Window")
+	(?h aw-split-window-horz "Split Horz Window")
+	(?o delete-other-windows "Delete Other Windows")
+	(?? aw-show-dispatch-help))
+  "List of actions for `aw-dispatch-default'.")
+  (global-set-key (kbd "C-c w") 'ace-window))
+
+
+;; (which-key-add-key-based-replacements "C-c f" "file")
+;; (progn
+;;   ;; define a prefix keymap
+;;   (define-prefix-command 'my-window-map)
+;;   (define-key my-window-map (kbd "d") 'delete-window)
+;;   )
+
+;; (global-set-key (kbd "C-c w") my-window-map)
