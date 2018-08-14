@@ -47,21 +47,31 @@
 
 (require 'use-package)
 
+;; Dashboard
+(use-package dashboard
+  :ensure t
+  :config
+  (dashboard-setup-startup-hook))
+
 ;; bring up help for key bindings
 (use-package which-key
   :ensure t
   :config
   (which-key-mode))
 
-;; Ivy
-(use-package ivy
+;; Org-bullets
+(use-package org-bullets
   :ensure t
   :config
-  (setq ivy-use-virtual-buffers t
-	ivy-count-format "%d/%d ")
-  (use-package counsel
-    :ensure t)
-  (ivy-mode))
+  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+
+;; Ivy
+(use-package helm
+  :bind
+  ("M-x" . helm-M-x)
+  ("C-x C-f" . helm-find-files)
+  :config
+  (helm-autoresize-mode))
 
 ;; Smartparens ()
 (use-package smartparens
@@ -73,13 +83,10 @@
 (use-package company
   :ensure t
   :config
+  (setq company-idle-delay 0.3
+        company-minimum-prefix-length 3
+        company-dabbrev-downcase nil)
   (global-company-mode))
-
-;; Org-bullets
-(use-package org-bullets
-  :ensure t
-  :config
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
 
 ;; Solarized-theme
 (use-package solarized-theme
@@ -110,33 +117,14 @@
   (setq dimmer-fraction 0.20)
   (dimmer-mode))
 
-;; minimap
-(use-package minimap
-  :ensure t
-  :config
-  (setq minimap-window-location "right")
-  (minimap-mode))
-
-(use-package smooth-scroll
-  :ensure t
-  :config
-  (smooth-scroll-mode))
-
-;; Dashboard
-(use-package dashboard
-  :ensure t
-  :config
-  (dashboard-setup-startup-hook))
-
 ;; Multiple-cursors
 (use-package multiple-cursors
-  :ensure t
-  :config
-  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
-  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
-  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
-  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this))
-
+  :bind
+  ("C-S-c C-S-c" . mc/edit-lines)
+  ("C->" . mc/mark-next-like-this)
+  ("C-<" . mc/mark-previous-like-this)
+  ("C-c C-<" . mc/mark-all-like-this))
+  
 ;;;
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -145,7 +133,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (multiple-cursors smooth-scroll minimap dashboard dimmer company-go go-mode solarized-theme ivy zenburn-theme zenburn-them smartparens org-bullets which-key use-package))))
+    (pixel-scroll multiple-cursors smooth-scroll minimap dashboard dimmer company-go go-mode solarized-theme ivy zenburn-theme zenburn-them smartparens org-bullets which-key use-package))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
