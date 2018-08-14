@@ -140,34 +140,19 @@
   ("C->" . mc/mark-next-like-this)
   ("C-<" . mc/mark-previous-like-this)
   ("C-c C-<" . mc/mark-all-like-this))
-  
 
-;; Ace window
 (use-package ace-window
-  :ensure t
-  :config
-  (setq aw-dispatch-always t)
-  (defvar aw-dispatch-alist
-  '((?x aw-delete-window "Delete Window")
-	(?m aw-swap-window "Swap Windows")
-	(?M aw-move-window "Move Window")
-	(?j aw-switch-buffer-in-window "Select Buffer")
-	(?n aw-flip-window)
-	(?u aw-switch-buffer-other-window "Switch Buffer Other Window")
-	(?c aw-split-window-fair "Split Fair Window")
-	(?v aw-split-window-vert "Split Vert Window")
-	(?h aw-split-window-horz "Split Horz Window")
-	(?o delete-other-windows "Delete Other Windows")
-	(?? aw-show-dispatch-help))
-  "List of actions for `aw-dispatch-default'.")
-  (global-set-key (kbd "C-c w") 'ace-window))
-
-
-;; (which-key-add-key-based-replacements "C-c f" "file")
-;; (progn
-;;   ;; define a prefix keymap
-;;   (define-prefix-command 'my-window-map)
-;;   (define-key my-window-map (kbd "d") 'delete-window)
-;;   )
-
-;; (global-set-key (kbd "C-c w") my-window-map)
+  :ensure t)
+;; Bind window commands
+(bind-keys :map global-map
+            :prefix-map my-window-map
+            :prefix "C-c w"
+            ("-" . split-window-below)
+            ("|" . split-window-right)
+            ("x" . delete-window)
+            ("d" . ace-delete-window)
+            ("o" . ace-window)
+            ("h" . windmove-left)
+            ("j" . windmove-down)
+            ("k" . windmove-up)
+            ("l" . windmove-right))
