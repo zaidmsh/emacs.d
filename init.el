@@ -1,3 +1,4 @@
+
 (setq user-full-name "Zaid Alshathry")
 (setq user-mail-address "zmzshathry@gmail.com")
 
@@ -32,6 +33,9 @@
 
 ;; Add padding to window edges
 (set-fringe-mode 3)
+
+;; Set My-prefix
+(setq my-prefix "C-c ")
 
 ;; Initialize package
 (require 'package)
@@ -77,6 +81,25 @@
   :config
   (helm-autoresize-mode))
 
+;; Projectile
+(use-package projectile
+  :ensure t
+  :config
+  ;; (projectile-global-mode)
+
+  (setq projectile-completion-system 'helm
+        projectile-file-exists-remote-cache-expire nil)
+
+  (projectile-load-known-projects)
+  (use-package helm-projectile
+    :ensure t
+    :bind (:map global-map
+          :prefix-map my-projectile-map
+          :prefix (concat my-prefix "p")
+          ("h" . helm-projectile))
+    :config
+    (helm-projectile-on)))
+
 ;; Smartparens ()
 (use-package smartparens
   :ensure t
@@ -105,14 +128,29 @@
   (add-hook 'before-save-hook
             (lambda ()
               (when (string= major-mode "go-mode")
-                (gofmt-before-save)))))
+                (gofmt-before-save))))
+  
+  (use-package company-go
+    :ensure t
+    :config
+    (add-hook 'go-mode-hook
+              (lambda ()
+                (add-to-list 'company-backends 'company-go)))))
 
-(use-package company-go
+;; Yaml
+(use-package yaml-mode
   :ensure t
-  :config
-  (add-hook 'go-mode-hook
-            (lambda ()
-              (add-to-list 'company-backends 'company-go))))
+  :mode "\\.yaml"
+  :bind (:map yaml-mode-map
+              ("<return>" . newline-and-indent)))
+
+;; Markdown
+(use-package markdown-mode
+  :ensure t
+  :commands (markdown-mode gfm-mode)
+  :mode (("README\\.md'" . gfm-mode)
+         ("\\.md'" . markdown-mode)
+         ("\\.markdown'" . markdown-mode)))
 
 ;; Dimmer: visually highlight the selected window
 (use-package dimmer
@@ -143,16 +181,39 @@
 
 (use-package ace-window
   :ensure t)
+
+(defun my/split-window-right-and-move()
+  "Split window to the right and move to it"
+  (interactive)
+  (split-window-right)
+  (windmove-right))
+
+(defun my/split-window-below-and-move()
+  "Split window to the below and move to it"
+  (interactive)
+  (split-window-below)
+  (windmove-down))
+
+
 ;; Bind window commands
 (bind-keys :map global-map
-            :prefix-map my-window-map
-            :prefix "C-c w"
-            ("-" . split-window-below)
-            ("|" . split-window-right)
-            ("x" . delete-window)
-            ("d" . ace-delete-window)
-            ("o" . ace-window)
-            ("h" . windmove-left)
-            ("j" . windmove-down)
-            ("k" . windmove-up)
-            ("l" . windmove-right))
+           :prefix-map my-window-map
+           :prefix (concat my-prefix "w")
+           ("s" . split-window-below)
+           ("v" . split-window-right)
+           ("S" . my/split-window-below-and-move)
+           ("V" . my/split-window-right-and-move)
+           ("d" . delete-window)
+           ("D" . ace-delete-window)
+           ("o" . ace-window)
+           ("M" . ace-swap-window)
+           ("h" . windmove-left)
+           ("j" . windmove-down)
+           ("k" . windmove-up)
+           ("l" . windmove-right))
+
+;; Bind file commands
+(bind-keys :map global-map
+           :prefix-map my-file-map
+           :prefix (concat my-prefix "f")
+           ("f" . helm-find-files))

@@ -1,0 +1,7 @@
+auto-save-list/
+elpa/
+*.dat*
+.projectile
+projectile*
+recentf
+*~
