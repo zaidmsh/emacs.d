@@ -76,16 +76,24 @@
 ;; helm
 (use-package helm
   :bind
+  ("C-c h" . helm-command-prefix)
+  ("<tab>" . helm-execute-persistent-action) ; rebind tab to do persistent action
+  ("C-i" . helm-execute-persistent-action) ; make TAB works in terminal
+  ("C-z" . helm-select-action) ; list actions using C-z
   ("M-x" . helm-M-x)
   ("C-x C-f" . helm-find-files)
+  ("M-y" . helm-show-kill-ring)
+  ("C-x b" . helm-mini)
   :config
+  (setq helm-M-x-fuzzy-match t)
+  (setq helm-buffers-fuzzy-matching t)
   (helm-autoresize-mode))
 
 ;; Projectile
 (use-package projectile
   :ensure t
   :config
-  ;; (projectile-global-mode)
+  (projectile-global-mode)
 
   (setq projectile-completion-system 'helm
         projectile-file-exists-remote-cache-expire nil)
@@ -93,13 +101,21 @@
   (projectile-load-known-projects)
   (use-package helm-projectile
     :ensure t
-    :bind (:map global-map
-          :prefix-map my-projectile-map
-          :prefix (concat my-prefix "p")
-          ("h" . helm-projectile))
     :config
     (helm-projectile-on)))
 
+(bind-keys :map global-map
+           :prefix-map my-projectile-map
+           :prefix (concat my-prefix "p")
+           ("p" . helm-projectile-switch-project)
+           ("b" . helm-projectile-switch-to-buffer)
+           ("f" . helm-projectile-find-file)
+           ("d" . helm-projectile-find-dir)
+           ("D" . projectile-dired)
+           ("c" . projectile-compile-project)
+           ("g" . helm-projectile-grep))
+
+  
 ;; Smartparens ()
 (use-package smartparens
   :ensure t
