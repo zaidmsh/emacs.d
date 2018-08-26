@@ -37,6 +37,10 @@
 ;; Set My-prefix
 (setq my-prefix "C-c ")
 
+;; Use ibuffer
+(global-set-key (kbd "C-x C-b") 'ibuffer)
+(global-display-line-numbers-mode)
+
 ;; Initialize package
 (require 'package)
 (setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
@@ -122,51 +126,17 @@
   :config
   (smartparens-mode))
 
-;; Company
-(use-package company
+;; smart-mode-line
+(use-package smart-mode-line-powerline-theme
   :ensure t
   :config
-  (setq company-idle-delay 0.3
-        company-minimum-prefix-length 3
-        company-dabbrev-downcase nil)
-  (global-company-mode))
+  (sml/setup))
 
-;; Solarized-theme
-(use-package solarized-theme
+;; zenburn-theme
+(use-package zenburn-theme
   :ensure t
   :config
-  (load-theme 'solarized-dark t))
-
-;; Golang
-(use-package go-mode
-  :ensure t
-  :config
-  (add-hook 'before-save-hook
-            (lambda ()
-              (when (string= major-mode "go-mode")
-                (gofmt-before-save))))
-  
-  (use-package company-go
-    :ensure t
-    :config
-    (add-hook 'go-mode-hook
-              (lambda ()
-                (add-to-list 'company-backends 'company-go)))))
-
-;; Yaml
-(use-package yaml-mode
-  :ensure t
-  :mode "\\.yaml"
-  :bind (:map yaml-mode-map
-              ("<return>" . newline-and-indent)))
-
-;; Markdown
-(use-package markdown-mode
-  :ensure t
-  :commands (markdown-mode gfm-mode)
-  :mode (("README\\.md'" . gfm-mode)
-         ("\\.md'" . markdown-mode)
-         ("\\.markdown'" . markdown-mode)))
+  (load-theme 'zenburn t))
 
 ;; Dimmer: visually highlight the selected window
 (use-package dimmer
@@ -175,10 +145,10 @@
   (setq dimmer-fraction 0.20)
   (dimmer-mode))
 
-(use-package smooth-scroll
+(use-package smooth-scrolling
   :ensure t
   :config
-  (smooth-scroll-mode))
+  (smooth-scrolling-mode))
 
 ;; Dashboard
 (use-package dashboard
@@ -232,4 +202,81 @@
 (bind-keys :map global-map
            :prefix-map my-file-map
            :prefix (concat my-prefix "f")
-           ("f" . helm-find-files))
+           ("f" . helm-find-files)
+           ("c" . copy-file)
+           ("s" . save-buffer))
+
+;; Company
+(use-package company
+  :ensure t
+  :config
+  (setq company-idle-delay 0.3
+        company-minimum-prefix-length 3
+        company-dabbrev-downcase nil)
+  (global-company-mode))
+
+
+;; C/C++
+(use-package irony
+  :ensure t
+  :config
+  (add-hook 'c++-mode-hook 'irony-mode)
+
+  (use-package company-irony
+    :ensure t)
+  (use-package company-irony-c-headers
+    :ensure t)
+  
+  (add-hook 'irony-mode-hook
+            (lambda ()
+              (add-to-list 'company-backends '(company-irony company-irony-c-headers)))))
+
+;; Golang
+(use-package go-mode
+  :ensure t
+  :config
+  (add-hook 'before-save-hook
+            (lambda ()
+              (when (string= major-mode "go-mode")
+                (gofmt-before-save))))
+  
+  (use-package company-go
+    :ensure t
+    :config
+    (add-hook 'go-mode-hook
+              (lambda ()
+                (add-to-list 'company-backends 'company-go)))))
+
+;; Yaml
+(use-package yaml-mode
+  :ensure t
+  :mode "\\.yaml"
+  :bind (:map yaml-mode-map
+              ("<return>" . newline-and-indent)))
+
+;; Markdown
+(use-package markdown-mode
+  :ensure t
+  :commands (markdown-mode gfm-mode)
+  :mode (("README\\.md'" . gfm-mode)
+         ("\\.md'" . markdown-mode)
+         ("\\.markdown'" . markdown-mode)))
+
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   (quote
+    ("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" default)))
+ '(package-selected-packages
+   (quote
+    (company-irony-c-headers company-irony irony zenburn-theme yaml-mode which-key use-package sublimity solarized-theme smooth-scrolling smooth-scroll smartparens smart-mode-line-powerline-theme org-bullets multiple-cursors minimap markdown-mode helm-projectile flycheck evil dimmer dashboard counsel company-go auto-complete ace-window))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
