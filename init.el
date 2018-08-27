@@ -61,6 +61,30 @@
   :config
   (dashboard-setup-startup-hook))
 
+;; smart-mode-line
+(use-package smart-mode-line-powerline-theme
+  :ensure t
+  :config
+  (sml/setup))
+
+;; zenburn-theme
+(use-package zenburn-theme
+  :ensure t
+  :config
+  (load-theme 'zenburn t))
+
+;; Dimmer: visually highlight the selected window
+(use-package dimmer
+  :ensure t
+  :config
+  (setq dimmer-fraction 0.20)
+  (dimmer-mode))
+
+(use-package smooth-scrolling
+  :ensure t
+  :config
+  (smooth-scrolling-mode))
+
 ;; bring up help for key bindings
 (use-package which-key
   :ensure t
@@ -81,9 +105,6 @@
 (use-package helm
   :bind
   ("C-c h" . helm-command-prefix)
-  ("<tab>" . helm-execute-persistent-action) ; rebind tab to do persistent action
-  ("C-i" . helm-execute-persistent-action) ; make TAB works in terminal
-  ("C-z" . helm-select-action) ; list actions using C-z
   ("M-x" . helm-M-x)
   ("C-x C-f" . helm-find-files)
   ("M-y" . helm-show-kill-ring)
@@ -91,6 +112,9 @@
   :config
   (setq helm-M-x-fuzzy-match t)
   (setq helm-buffers-fuzzy-matching t)
+  (define-key helm-map (kbd "<tab>") 'helm-execute-persistent-action) ; rebind tab to do persistent 
+  (define-key helm-map (kbd "C-i") 'helm-execute-persistent-action) ; make TAB works in terminal
+  (define-key helm-map (kbd "C-z") 'helm-select-action) ; list actions using C-z
   (helm-autoresize-mode))
 
 ;; Projectile
@@ -124,37 +148,7 @@
 (use-package smartparens
   :ensure t
   :config
-  (smartparens-mode))
-
-;; smart-mode-line
-(use-package smart-mode-line-powerline-theme
-  :ensure t
-  :config
-  (sml/setup))
-
-;; zenburn-theme
-(use-package zenburn-theme
-  :ensure t
-  :config
-  (load-theme 'zenburn t))
-
-;; Dimmer: visually highlight the selected window
-(use-package dimmer
-  :ensure t
-  :config
-  (setq dimmer-fraction 0.20)
-  (dimmer-mode))
-
-(use-package smooth-scrolling
-  :ensure t
-  :config
-  (smooth-scrolling-mode))
-
-;; Dashboard
-(use-package dashboard
-  :ensure t
-  :config
-  (dashboard-setup-startup-hook))
+  (smartparens-global-mode t))
 
 ;; Multiple-cursors
 (use-package multiple-cursors
@@ -211,25 +205,50 @@
   :ensure t
   :config
   (setq company-idle-delay 0.3
-        company-minimum-prefix-length 3
+        company-minimum-prefix-length 2
         company-dabbrev-downcase nil)
+  (add-to-list 'company-backends 'company-keywords)
   (global-company-mode))
 
+(use-package flycheck
+  :ensure t
+  :config
+  (global-flycheck-mode t))
+
+(use-package yasnippet
+  :ensure t
+  :init
+  (yas-global-mode 1)
+  :config
+  (use-package yasnippet-snippets
+    :ensure t))
 
 ;; C/C++
 (use-package irony
   :ensure t
+  :mode (("\\.c'" . c-mode)
+         ("\\.cpp'" . cc-mode)
+         ("\\.h'" . c-mode)
+         ("\\.hpp'" . cc-mode))
   :config
+  (add-hook 'c-mode-hook 'irony-mode)
   (add-hook 'c++-mode-hook 'irony-mode)
-
+ 
+  (use-package irony-eldoc
+    :ensure t
+    :config
+    (add-hook 'irony-mode-hook 'irony-eldoc))
+  
   (use-package company-irony
     :ensure t)
   (use-package company-irony-c-headers
     :ensure t)
-  
-  (add-hook 'irony-mode-hook
-            (lambda ()
-              (add-to-list 'company-backends '(company-irony company-irony-c-headers)))))
+  (add-to-list 'company-backends '(company-irony company-irony-c-headers company-clang))
+
+  (use-package flycheck-irony
+    :ensure t
+    :config
+    (add-hook 'flycheck-mode-hook 'flycheck-irony-setup)))
 
 ;; Golang
 (use-package go-mode
@@ -273,7 +292,7 @@
     ("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" default)))
  '(package-selected-packages
    (quote
-    (company-irony-c-headers company-irony irony zenburn-theme yaml-mode which-key use-package sublimity solarized-theme smooth-scrolling smooth-scroll smartparens smart-mode-line-powerline-theme org-bullets multiple-cursors minimap markdown-mode helm-projectile flycheck evil dimmer dashboard counsel company-go auto-complete ace-window))))
+    (irony-eldoc flycheck-irony yasnippet-snippets yasnippet company-irony-c-headers company-irony irony zenburn-theme yaml-mode which-key use-package sublimity solarized-theme smooth-scrolling smooth-scroll smartparens smart-mode-line-powerline-theme org-bullets multiple-cursors minimap markdown-mode helm-projectile flycheck evil dimmer dashboard counsel company-go auto-complete ace-window))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
