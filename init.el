@@ -65,6 +65,7 @@
 (use-package smart-mode-line-powerline-theme
   :ensure t
   :config
+  (setq sml/no-confirm-load-theme t)
   (sml/setup))
 
 ;; zenburn-theme
@@ -204,17 +205,15 @@
 (use-package company
   :ensure t
   :config
-  (setq company-idle-delay 0.3
+  (setq company-idle-delay 0.0
         company-minimum-prefix-length 2
         company-dabbrev-downcase nil)
   (add-to-list 'company-backends 'company-keywords)
   (global-company-mode))
 
 (use-package flycheck
-  :ensure t
-  :config
-  (global-flycheck-mode t))
-
+  :ensure t)
+ 
 (use-package yasnippet
   :ensure t
   :init
@@ -227,29 +226,42 @@
 (use-package irony
   :ensure t
   :mode (("\\.c'" . c-mode)
-         ("\\.cpp'" . cc-mode)
          ("\\.h'" . c-mode)
-         ("\\.hpp'" . cc-mode))
+         ("\\.cpp'" . c++-mode)
+         ("\\.hpp'" . c++-mode))
+  :hook ((c-mode c++-mode) . irony-mode)
   :config
-  (add-hook 'c-mode-hook 'irony-mode)
-  (add-hook 'c++-mode-hook 'irony-mode)
- 
-  (use-package company-irony
-    :ensure t)
-  (use-package company-irony-c-headers
-    :ensure t)
-  (add-to-list 'company-backends '(company-irony company-irony-c-headers company-clang))
+  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options))
 
-  (use-package flycheck-irony
-    :ensure t
-    :config
-    (add-hook 'flycheck-mode-hook 'flycheck-irony-setup)))
+(use-package company-irony
+	:requires company
+	:after irony)
+
+(use-package company-irony-c-headers
+	:requires company
+	:after company-irony
+	:config
+	(add-to-list 'company-backends '(company-irony-c-headers company-irony)))
 
 (use-package irony-eldoc
-  :ensure t
+  :after irony
+  :hook (irony-mode . irony-eldoc))
+
+(use-package flycheck-irony
+  :after irony
+  :hook  (irony-mode . flycheck-mode)
   :config
-  (add-hook 'irony-mode-hook #'irony-eldoc))
-  
+  (flycheck-irony-setup))
+
+(use-package cmake-mode
+  :mode (("CMakeLists\\.txt" . cmake-mode)
+         ("\\.cmake" . cmake-mode))
+  :config
+  (add-to-list 'company-backends '(company-cmake company-yasnippet)))
+
+(use-package company-cmake
+  :requires company
+  :after cmake-mode)
 
 ;; Golang
 (use-package go-mode
