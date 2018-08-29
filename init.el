@@ -1,4 +1,3 @@
-
 (setq user-full-name "Zaid Alshathry")
 (setq user-mail-address "zmzshathry@gmail.com")
 
@@ -231,37 +230,80 @@
          ("\\.hpp'" . c++-mode))
   :hook ((c-mode c++-mode) . irony-mode)
   :config
-  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options))
-
-(use-package company-irony
+  (defun my-irony-mode-hook ()
+    (define-key irony-mode-map [remap completion-at-point]
+      'irony-completion-at-point-async)
+    (define-key irony-mode-map [remap complete-symbol]
+      'irony-completion-at-point-async))
+ 
+  (add-hook 'irony-mode-hook 'my-irony-mode-hook)
+  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
+  
+  (use-package company-irony
 	:requires company
-	:after irony)
+	:after irony
+    :hook irony-mode)
 
-(use-package company-irony-c-headers
+  (use-package company-irony-c-headers
 	:requires company
 	:after company-irony
-	:config
-	(add-to-list 'company-backends '(company-irony-c-headers company-irony)))
+    :hook irony-mode)
 
-(use-package irony-eldoc
-  :after irony
-  :hook (irony-mode . irony-eldoc))
+  (add-hook 'irony-mode-hook 'company-irony-setup-begin-commands)
+  (add-to-list 'company-backends '(company-irony-c-headers company-irony company-yasnippet))
 
-(use-package flycheck-irony
-  :after irony
-  :hook  (irony-mode . flycheck-mode)
-  :config
-  (flycheck-irony-setup))
+  (use-package irony-eldoc
+    :after irony
+    :hook irony-mode)
+
+  (use-package flycheck-irony
+    :after irony
+    :hook  (irony-mode . flycheck-mode)
+    :config
+    (flycheck-irony-setup)))
 
 (use-package cmake-mode
   :mode (("CMakeLists\\.txt" . cmake-mode)
          ("\\.cmake" . cmake-mode))
   :config
+  (use-package company-cmake
+    :requires company
+    :after cmake-mode)
   (add-to-list 'company-backends '(company-cmake company-yasnippet)))
 
-(use-package company-cmake
-  :requires company
-  :after cmake-mode)
+(use-package rtags
+  :commands rtags-start-process-unless-running
+  :mode (("\\.c'" . c-mode)
+         ("\\.h'" . c-mode)
+         ("\\.cpp'" . c++-mode)
+         ("\\.hpp'" . c++-mode))
+  :hook ((c-mode c++-mode) . irony-mode)
+  :bind ([remap imenu] . rtags-imenu)
+  :config
+  (use-package company-rtags
+    :requires company rtags)
+  (use-package helm-rtags
+    :ensure t
+    :requires helm rtags
+    :hook rtags-mode)
+
+  (setq rtags-completions-enabled t
+        rtags-autostart-diagnostics t
+        rtags-use-bookmarks nil
+        rtags-completions-enabled nil
+        rtags-results-buffer-other-window t
+        rtags-jump-to-first-match nil
+        rtags-display-result-backend 'helm)
+  (rtags-enable-standard-keybindings))
+
+(use-package cmake-ide
+  :ensure t
+  :config
+  (cmake-ide-setup)
+  ;; (cmake-ide-falgs-c)
+  ;; (cmake-ide-flags-c++)
+  (setq cmake-ide-build-pool-dir "/home/zaid/build")
+  (setq cmake-ide-build-pool-use-persistent-naming t))
 
 ;; Golang
 (use-package go-mode
@@ -305,7 +347,7 @@
     ("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" default)))
  '(package-selected-packages
    (quote
-    (irony-eldoc flycheck-irony yasnippet-snippets yasnippet company-irony-c-headers company-irony irony zenburn-theme yaml-mode which-key use-package sublimity solarized-theme smooth-scrolling smooth-scroll smartparens smart-mode-line-powerline-theme org-bullets multiple-cursors minimap markdown-mode helm-projectile flycheck evil dimmer dashboard counsel company-go auto-complete ace-window))))
+    (helm-rg helm-ag cmake-ide company-yasnippet company-rtags helm-rtags rtags irony-eldoc flycheck-irony yasnippet-snippets yasnippet company-irony-c-headers company-irony irony zenburn-theme yaml-mode which-key use-package sublimity solarized-theme smooth-scrolling smooth-scroll smartparens smart-mode-line-powerline-theme org-bullets multiple-cursors minimap markdown-mode helm-projectile flycheck evil dimmer dashboard counsel company-go auto-complete ace-window))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
