@@ -207,7 +207,7 @@
   (setq company-idle-delay 0.0
         company-minimum-prefix-length 2
         company-dabbrev-downcase nil)
-  (add-to-list 'company-backends 'company-keywords)
+  ;; (add-to-list 'company-backends 'company-keywords)
   (global-company-mode))
 
 (use-package flycheck
@@ -224,10 +224,6 @@
 ;; C/C++
 (use-package irony
   :ensure t
-  :mode (("\\.c'" . c-mode)
-         ("\\.h'" . c-mode)
-         ("\\.cpp'" . c++-mode)
-         ("\\.hpp'" . c++-mode))
   :hook ((c-mode c++-mode) . irony-mode)
   :config
   (defun my-irony-mode-hook ()
@@ -242,15 +238,14 @@
   (use-package company-irony
 	:requires company
 	:after irony
-    :hook irony-mode)
+    :hook (irony-mode . company-irony-setup-begin-commands))
 
   (use-package company-irony-c-headers
 	:requires company
-	:after company-irony
-    :hook irony-mode)
+	:after irony
+    :hook (irony-mode . company-irony-c-headers--modes))
 
-  (add-hook 'irony-mode-hook 'company-irony-setup-begin-commands)
-  (add-to-list 'company-backends '(company-irony-c-headers company-irony company-yasnippet))
+  (add-to-list 'company-backends '(company-irony-c-headers company-irony))
 
   (use-package irony-eldoc
     :after irony
@@ -258,52 +253,53 @@
 
   (use-package flycheck-irony
     :after irony
-    :hook  (irony-mode . flycheck-mode)
+    :requires flycheck
+    ;; :hook  (irony-mode . flycheck-mode)
     :config
     (flycheck-irony-setup)))
 
-(use-package cmake-mode
-  :mode (("CMakeLists\\.txt" . cmake-mode)
-         ("\\.cmake" . cmake-mode))
-  :config
-  (use-package company-cmake
-    :requires company
-    :after cmake-mode)
-  (add-to-list 'company-backends '(company-cmake company-yasnippet)))
+;; (use-package cmake-mode
+;;   :mode (("CMakeLists\\.txt" . cmake-mode)
+;;          ("\\.cmake" . cmake-mode))
+;;   :config
+;;   (use-package company-cmake
+;;     :requires company
+;;     :after cmake-mode)
+;;   (add-to-list 'company-backends '(company-cmake company-yasnippet)))
 
-(use-package rtags
-  :commands rtags-start-process-unless-running
-  :mode (("\\.c'" . c-mode)
-         ("\\.h'" . c-mode)
-         ("\\.cpp'" . c++-mode)
-         ("\\.hpp'" . c++-mode))
-  :hook ((c-mode c++-mode) . irony-mode)
-  :bind ([remap imenu] . rtags-imenu)
-  :config
-  (use-package company-rtags
-    :requires company rtags)
-  (use-package helm-rtags
-    :ensure t
-    :requires helm rtags
-    :hook rtags-mode)
+;; (use-package rtags
+;;   :commands rtags-start-process-unless-running
+;;   :mode (("\\.c'" . c-mode)
+;;          ("\\.h'" . c-mode)
+;;          ("\\.cpp'" . c++-mode)
+;;          ("\\.hpp'" . c++-mode))
+;;   :hook ((c-mode c++-mode) . irony-mode)
+;;   :bind ([remap imenu] . rtags-imenu)
+;;   :config
+;;   (use-package company-rtags
+;;     :requires company rtags)
+;;   (use-package helm-rtags
+;;     :ensure t
+;;     :requires helm rtags
+;;     :hook rtags-mode)
 
-  (setq rtags-completions-enabled t
-        rtags-autostart-diagnostics t
-        rtags-use-bookmarks nil
-        rtags-completions-enabled nil
-        rtags-results-buffer-other-window t
-        rtags-jump-to-first-match nil
-        rtags-display-result-backend 'helm)
-  (rtags-enable-standard-keybindings))
+;;   (setq rtags-completions-enabled t
+;;         rtags-autostart-diagnostics t
+;;         rtags-use-bookmarks nil
+;;         rtags-completions-enabled nil
+;;         rtags-results-buffer-other-window t
+;;         rtags-jump-to-first-match nil
+;;         rtags-display-result-backend 'helm)
+;;   (rtags-enable-standard-keybindings))
 
-(use-package cmake-ide
-  :ensure t
-  :config
-  (cmake-ide-setup)
-  ;; (cmake-ide-falgs-c)
-  ;; (cmake-ide-flags-c++)
-  (setq cmake-ide-build-pool-dir "/home/zaid/build")
-  (setq cmake-ide-build-pool-use-persistent-naming t))
+;; (use-package cmake-ide
+;;   :ensure t
+;;   :config
+;;   (cmake-ide-setup)
+;;   ;; (cmake-ide-falgs-c)
+;;   ;; (cmake-ide-flags-c++)
+;;   (setq cmake-ide-build-pool-dir "/home/zaid/build")
+;;   (setq cmake-ide-build-pool-use-persistent-naming t))
 
 ;; Golang
 (use-package go-mode
