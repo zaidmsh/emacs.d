@@ -1,3 +1,4 @@
+
 (setq user-full-name "Zaid Alshathry")
 (setq user-mail-address "zmzshathry@gmail.com")
 
@@ -144,7 +145,7 @@
   (setq company-idle-delay 0.0
         company-minimum-prefix-length 2
         company-dabbrev-downcase nil)
-  (add-to-list 'company-backends '(company-keywords company-elisp))
+  (add-to-list 'company-backends '(company-keywords company-elisp company-yasnippet))
   (global-company-mode))
 
 (use-package flycheck
@@ -158,20 +159,22 @@
   (use-package yasnippet-snippets
     :ensure t))
 
+;;;; magit
+(use-package magit
+  :ensure t
+  :defer t
+  :bind (("C-c g" . magit-status)))
 ;; C/C++
+(setq-default c-basic-offset 4)
 (use-package irony
   :ensure t
-  :hook ((c-mode c++-mode) . irony-mode)
+  :hook (((c-mode . irony-mode)
+          (c++-mode . irony-mode)
+          (irony-mode . (lambda () ([remap completion-at-point] . irony-completion-at-point-async)))
+          (irony-mode . (lambda () ([remap complete-symbol] . irony-completion-at-point-async)))
+          (irony-mode . irony-cdb-autosetup-compile-options)))
   :config
-  (defun my-irony-mode-hook ()
-    (define-key irony-mode-map [remap completion-at-point]
-      'irony-completion-at-point-async)
-    (define-key irony-mode-map [remap complete-symbol]
-      'irony-completion-at-point-async))
-
-  (add-hook 'irony-mode-hook 'my-irony-mode-hook)
-  (add-hook 'irony-mode-hook 'irony-cdb-autosetup-compile-options)
-  ; set clang headers for MacOS
+  ;; ; set clang headers for MacOS
   (if (eq system-type 'darwin) (setq irony-additional-clang-options '("-I/usr/local/include"
                                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1"
                                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.1.0/include"
@@ -182,16 +185,19 @@
     :ensure t
 	:requires company
 	:after irony
-    :hook (irony-mode . company-irony-setup-begin-commands)
+    :hook ((irony-mode . company-irony-setup-begin-commands)
+           (irony-mode . (lambda ()
+                           (add-to-list 'company-backends 'company-irony))))
+
     :config
-    (setq company-irony-ignore-case 'off))
+    (setq company-irony-ignore-case 'smart))
 
   (use-package company-irony-c-headers
     :ensure t
 	:requires company
-	:after irony)
-
-  (add-to-list 'company-backends '(company-irony-c-headers company-irony company-yasnippet))
+	:after irony
+    :hook (irony-mode . (lambda ()
+                          (add-to-list 'company-backends 'company-irony-c-headers))))
 
   (use-package irony-eldoc
     :ensure t    
@@ -202,9 +208,8 @@
     :ensure t
     :after irony
     :requires flycheck
-    :hook  (irony-mode . flycheck-mode)
-    :config
-    (flycheck-irony-setup)))
+    :hook  ((irony-mode . flycheck-mode)
+            (irony-mode . flycheck-irony-setup))))
 
 (use-package cmake-mode
   :mode (("CMakeLists\\.txt" . cmake-mode)
@@ -212,33 +217,34 @@
   :config
   (use-package company-cmake
     :requires company
-    :after cmake-mode)
-  (add-to-list 'company-backends '(company-cmake company-yasnippet)))
+    :after cmake-mode
+    :hook (cmake-mode . (lambda ()
+                          (add-to-list 'company-backends 'company-cmake)))))
 
-;; (use-package rtags
-;;   :commands rtags-start-process-unless-running
-;;   :mode (("\\.c'" . c-mode)
-;;          ("\\.h'" . c-mode)
-;;          ("\\.cpp'" . c++-mode)
-;;          ("\\.hpp'" . c++-mode))
-;;   :hook ((c-mode c++-mode) . irony-mode)
-;;   :bind ([remap imenu] . rtags-imenu)
-;;   :config
-;;   (use-package company-rtags
-;;     :requires company rtags)
-;;   (use-package helm-rtags
-;;     :ensure t
-;;     :requires helm rtags
-;;     :hook rtags-mode)
 
-;;   (setq rtags-completions-enabled t
-;;         rtags-autostart-diagnostics t
-;;         rtags-use-bookmarks nil
-;;         rtags-completions-enabled nil
-;;         rtags-results-buffer-other-window t
-;;         rtags-jump-to-first-match nil
-;;         rtags-display-result-backend 'helm)
-;;   (rtags-enable-standard-keybindings))
+(use-package rtags
+  :ensure t
+  :commands rtags-start-process-unless-running
+  :hook ((c-mode c++-mode) . rtags-start-process-unless-running)
+  :bind ([remap imenu] . rtags-imenu)
+  :config
+  (use-package company-rtags
+    :ensure t
+    :requires company
+    :hook (rtags-mode . (lambda ()
+                          (add-to-list 'company-backends 'company-rtags))))
+
+  (use-package helm-rtags
+    :ensure t)
+
+  (setq rtags-completions-enabled t
+        rtags-autostart-diagnostics t
+        rtags-use-bookmarks nil
+        rtags-completions-enabled nil
+        rtags-results-buffer-other-window t
+        rtags-jump-to-first-match nil
+        rtags-display-result-backend 'helm)
+  (rtags-enable-standard-keybindings))
 
 ;; (use-package cmake-ide
 ;;   :ensure t
@@ -253,17 +259,12 @@
 (use-package go-mode
   :ensure t
   :config
-  (add-hook 'before-save-hook
-            (lambda ()
-              (when (string= major-mode "go-mode")
-                (gofmt-before-save))))
-  
+  (add-hook 'before-save #'gofmt-before-save)
   (use-package company-go
     :ensure t
     :config
-    (add-hook 'go-mode-hook
-              (lambda ()
-                (add-to-list 'company-backends 'company-go)))))
+    :hook (go-mode . (lambda ()
+                            (add-to-list 'company-backends 'company-go)))))
 
 ;; Yaml
 (use-package yaml-mode
@@ -392,7 +393,8 @@
 (use-package org-bullets
   :ensure t
   :config
-  (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
+  (add-hook 'org-mode-hook (lambda ()
+                             (org-bullets-mode 1))))
 
 
 (custom-set-variables
@@ -405,7 +407,7 @@
     ("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" default)))
  '(package-selected-packages
    (quote
-    (ag swiper-helm helm-rg helm-ag cmake-ide company-yasnippet company-rtags helm-rtags rtags irony-eldoc flycheck-irony yasnippet-snippets yasnippet company-irony-c-headers company-irony irony zenburn-theme yaml-mode which-key use-package sublimity solarized-theme smooth-scrolling smooth-scroll smartparens smart-mode-line-powerline-theme org-bullets multiple-cursors minimap markdown-mode helm-projectile flycheck evil dimmer dashboard counsel company-go auto-complete ace-window))))
+    (magit ag swiper-helm helm-rg helm-ag cmake-ide company-yasnippet company-rtags helm-rtags rtags irony-eldoc flycheck-irony yasnippet-snippets yasnippet company-irony-c-headers company-irony irony zenburn-theme yaml-mode which-key use-package sublimity solarized-theme smooth-scrolling smooth-scroll smartparens smart-mode-line-powerline-theme org-bullets multiple-cursors minimap markdown-mode helm-projectile flycheck evil dimmer dashboard counsel company-go auto-complete ace-window))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
