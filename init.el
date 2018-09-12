@@ -1,4 +1,3 @@
-
 (setq user-full-name "Zaid Alshathry")
 (setq user-mail-address "zmzshathry@gmail.com")
 
@@ -78,7 +77,7 @@
   :config
   (setq helm-M-x-fuzzy-match t)
   (setq helm-buffers-fuzzy-matching t)
-  (setq helm-switch-to-buffer-ow-vertically 'decide)
+  (setq helm-switch-to-buffer-ow-horizontally 'decide)
   (helm-autoresize-mode))
 
 ;; Search packages
@@ -125,7 +124,8 @@
         ("b" . helm-projectile-switch-to-buffer)
         ("s g" . helm-projectile-grep)
         ("s a" . helm-projectile-ag)
-        ("s r" . helm-projectile-rg))
+        ("s r" . helm-projectile-rg)
+        ("s R" . helm-projectile-rg-at-point))
   :config
   (projectile-global-mode)
 
@@ -137,6 +137,26 @@
     :ensure t
     :config
     (helm-projectile-on)))
+
+;; neotree
+(use-package neotree
+  :ensure t
+  :bind (:map global-map
+              ("<f8>" . neotree-project-dir))
+  :config
+  (defun neotree-project-dir ()
+    "Open NeoTree using the git root."
+    (interactive)
+    (let ((project-dir (projectile-project-root))   
+          (file-name (buffer-file-name)))
+      (neotree-toggle)
+      (if project-dir
+          (if (neo-global--window-exists-p)
+              (progn
+                (neotree-dir project-dir)
+                (neotree-find file-name)))
+        (message "Could not find git project root.")))))
+    
 
 ;; Company
 (use-package company
@@ -222,29 +242,29 @@
                           (add-to-list 'company-backends 'company-cmake)))))
 
 
-(use-package rtags
-  :ensure t
-  :commands rtags-start-process-unless-running
-  :hook ((c-mode c++-mode) . rtags-start-process-unless-running)
-  :bind ([remap imenu] . rtags-imenu)
-  :config
-  (use-package company-rtags
-    :ensure t
-    :requires company
-    :hook (rtags-mode . (lambda ()
-                          (add-to-list 'company-backends 'company-rtags))))
+;; (use-package rtags
+;;   :ensure t
+;;   :commands rtags-start-process-unless-running
+;;   :hook ((c-mode c++-mode) . rtags-start-process-unless-running)
+;;   :bind ([remap imenu] . rtags-imenu)
+;;   :config
+;;   (use-package company-rtags
+;;     :ensure t
+;;     :requires company
+;;     :hook (rtags-mode . (lambda ()
+;;                           (add-to-list 'company-backends 'company-rtags))))
 
-  (use-package helm-rtags
-    :ensure t)
+;;   (use-package helm-rtags
+;;     :ensure t)
 
-  (setq rtags-completions-enabled t
-        rtags-autostart-diagnostics t
-        rtags-use-bookmarks nil
-        rtags-completions-enabled nil
-        rtags-results-buffer-other-window t
-        rtags-jump-to-first-match nil
-        rtags-display-result-backend 'helm)
-  (rtags-enable-standard-keybindings))
+;;   (setq rtags-completions-enabled t
+;;         rtags-autostart-diagnostics t
+;;         rtags-use-bookmarks nil
+;;         rtags-completions-enabled nil
+;;         rtags-results-buffer-other-window t
+;;         rtags-jump-to-first-match nil
+;;         rtags-display-result-backend 'helm)
+;;   (rtags-enable-standard-keybindings))
 
 ;; (use-package cmake-ide
 ;;   :ensure t
@@ -342,12 +362,8 @@
            ("s" . swiper)
            ("a" . helm-ag)
            ("g" . helm-grep)
-           ("r" . helm-rg))
-
-
-(which-key-add-key-based-replacements
-  (concat my-search-prefix "a") "ag-prefix"
-  (concat my-search-prefix "g") "ripgrep-prefix")
+           ("r" . helm-rg)
+           ("R" . helm-rg-at-point))
 
 ;; file commands keymap
 ;; Bind file commands
@@ -396,6 +412,15 @@
   (add-hook 'org-mode-hook (lambda ()
                              (org-bullets-mode 1))))
 
+(use-package popwin
+  :ensure t
+  :hook ((helm-after-initialize-hook . (lambda ()
+                                         (popwin:display-buffer helm-buffer t)
+                                         (popwin-mode -1)))
+         (helm-cleanup-hook . (lambda () (popwin-mode -1))))
+  :config
+  (push '("^\*helm.+\*$" :regexp t) popwin:special-display-config)
+  (popwin-mode 1))
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
@@ -407,7 +432,7 @@
     ("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" default)))
  '(package-selected-packages
    (quote
-    (magit ag swiper-helm helm-rg helm-ag cmake-ide company-yasnippet company-rtags helm-rtags rtags irony-eldoc flycheck-irony yasnippet-snippets yasnippet company-irony-c-headers company-irony irony zenburn-theme yaml-mode which-key use-package sublimity solarized-theme smooth-scrolling smooth-scroll smartparens smart-mode-line-powerline-theme org-bullets multiple-cursors minimap markdown-mode helm-projectile flycheck evil dimmer dashboard counsel company-go auto-complete ace-window))))
+    (popwin neotree magit ag swiper-helm helm-rg helm-ag cmake-ide company-yasnippet company-rtags helm-rtags rtags irony-eldoc flycheck-irony yasnippet-snippets yasnippet company-irony-c-headers company-irony irony zenburn-theme yaml-mode which-key use-package sublimity solarized-theme smooth-scrolling smooth-scroll smartparens smart-mode-line-powerline-theme org-bullets multiple-cursors minimap markdown-mode helm-projectile flycheck evil dimmer dashboard counsel company-go auto-complete ace-window))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
