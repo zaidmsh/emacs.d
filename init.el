@@ -77,7 +77,7 @@
   :config
   (setq helm-M-x-fuzzy-match t)
   (setq helm-buffers-fuzzy-matching t)
-  (setq helm-switch-to-buffer-ow-horizontally 'decide)
+  (setq helm-window-prefer-horizontal-split 'decide)
   (helm-autoresize-mode))
 
 ;; Search packages
@@ -91,6 +91,7 @@
 ;; ripgrep
 (use-package ripgrep
   :ensure t)
+
 (use-package helm-rg
   :requires helm ripgrep
   :bind
@@ -132,11 +133,12 @@
   (setq projectile-completion-system 'helm
         projectile-file-exists-remote-cache-expire nil)
 
-  (projectile-load-known-projects)
-  (use-package helm-projectile
-    :ensure t
-    :config
-    (helm-projectile-on)))
+  (projectile-load-known-projects))
+
+(use-package helm-projectile
+  :ensure t
+  :config
+  (helm-projectile-on)))
 
 ;; neotree
 (use-package neotree
@@ -162,14 +164,16 @@
 (use-package company
   :ensure t
   :config
-  (setq company-idle-delay 0.0
-        company-minimum-prefix-length 2
+  (global-set-key (kbd "M-/") 'company-complete-common-or-cycle)
+  (setq company-idle-delay 0
         company-dabbrev-downcase nil)
   (add-to-list 'company-backends '(company-keywords company-elisp company-yasnippet))
   (global-company-mode))
 
 (use-package flycheck
-  :ensure t)
+  :ensure t
+  :config
+  (flycheck-mode t))
  
 (use-package yasnippet
   :ensure t
@@ -188,92 +192,97 @@
 (setq-default c-basic-offset 4)
 (use-package irony
   :ensure t
-  :hook (((c-mode . irony-mode)
-          (c++-mode . irony-mode)
-          (irony-mode . (lambda () ([remap completion-at-point] . irony-completion-at-point-async)))
+  :hook (((irony-mode . (lambda () ([remap completion-at-point] . irony-completion-at-point-async)))
           (irony-mode . (lambda () ([remap complete-symbol] . irony-completion-at-point-async)))
           (irony-mode . irony-cdb-autosetup-compile-options)))
+  :init
+  (add-hook 'c-mode-hook #'irony-mode)
+  (add-hook 'c++-mode-hook #'irony-mode)
   :config
   ;; ; set clang headers for MacOS
   (if (eq system-type 'darwin) (setq irony-additional-clang-options '("-I/usr/local/include"
                                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1"
                                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.1.0/include"
                                      "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
-                                     "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include")))
-  
-  (use-package company-irony
-    :ensure t
-	:requires company
-	:after irony
-    :hook ((irony-mode . company-irony-setup-begin-commands)
-           (irony-mode . (lambda ()
-                           (add-to-list 'company-backends 'company-irony))))
+                                     "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include"))))
+(use-package company-irony
+  :ensure t
+  :requires company
+  :after irony
+  :hook ((irony-mode . company-irony-setup-begin-commands)
+         (irony-mode . (lambda ()
+                         (add-to-list 'company-backends 'company-irony))))
+  :config
+  (setq company-irony-ignore-case 'smart))
 
-    :config
-    (setq company-irony-ignore-case 'smart))
+(use-package company-irony-c-headers
+  :ensure t
+  :requires company
+  :after irony
+  :hook (irony-mode . (lambda ()
+                        (add-to-list 'company-backends 'company-irony-c-headers))))
 
-  (use-package company-irony-c-headers
-    :ensure t
-	:requires company
-	:after irony
-    :hook (irony-mode . (lambda ()
-                          (add-to-list 'company-backends 'company-irony-c-headers))))
+(use-package irony-eldoc
+  :ensure t    
+  :after irony
+  :hook irony-mode)
 
-  (use-package irony-eldoc
-    :ensure t    
-    :after irony
-    :hook irony-mode)
+(use-package flycheck-irony
+  :ensure t
+  :requires flycheck
+  :hook ((irony-mode . flycheck-mode)
+         (flycheck-mode . flycheck-irony-setup)))
 
-  (use-package flycheck-irony
-    :ensure t
-    :after irony
-    :requires flycheck
-    :hook  ((irony-mode . flycheck-mode)
-            (irony-mode . flycheck-irony-setup))))
+(use-package srefactor
+  :ensure t
+  :bind (:map c-mode-map
+              ("M-RET" . srefactor-refactor-at-point))
+  :bind (:map c++-mode-map
+        ("M-RET" . srefactor-refactor-at-point)))
 
 (use-package cmake-mode
   :mode (("CMakeLists\\.txt" . cmake-mode)
-         ("\\.cmake" . cmake-mode))
+         ("\\.cmake" . cmake-mode)))
+
+(use-package company-cmake
+  :requires company
+  :after cmake-mode
+  :hook (cmake-mode . (lambda ()
+                        (add-to-list 'company-backends 'company-cmake))))
+
+(use-package rtags
+  :ensure t
+  :commands rtags-start-process-unless-running
+  :hook ((c-mode c++-mode) . rtags-start-process-unless-running)
+  :bind ([remap imenu] . rtags-imenu)
   :config
-  (use-package company-cmake
-    :requires company
-    :after cmake-mode
-    :hook (cmake-mode . (lambda ()
-                          (add-to-list 'company-backends 'company-cmake)))))
 
+  (setq rtags-completions-enabled t
+        rtags-autostart-diagnostics t
+        rtags-use-bookmarks nil
+        rtags-completions-enabled nil
+        rtags-results-buffer-other-window t
+        rtags-jump-to-first-match nil
+        rtags-display-result-backend 'helm)
+  (rtags-enable-standard-keybindings))
 
-;; (use-package rtags
-;;   :ensure t
-;;   :commands rtags-start-process-unless-running
-;;   :hook ((c-mode c++-mode) . rtags-start-process-unless-running)
-;;   :bind ([remap imenu] . rtags-imenu)
-;;   :config
-;;   (use-package company-rtags
-;;     :ensure t
-;;     :requires company
-;;     :hook (rtags-mode . (lambda ()
-;;                           (add-to-list 'company-backends 'company-rtags))))
+(use-package company-rtags
+  :ensure t
+  :requires company
+  :hook (rtags-mode . (lambda ()
+                        (add-to-list 'company-backends 'company-rtags))))
 
-;;   (use-package helm-rtags
-;;     :ensure t)
+(use-package helm-rtags
+  :ensure t)
 
-;;   (setq rtags-completions-enabled t
-;;         rtags-autostart-diagnostics t
-;;         rtags-use-bookmarks nil
-;;         rtags-completions-enabled nil
-;;         rtags-results-buffer-other-window t
-;;         rtags-jump-to-first-match nil
-;;         rtags-display-result-backend 'helm)
-;;   (rtags-enable-standard-keybindings))
-
-;; (use-package cmake-ide
-;;   :ensure t
-;;   :config
-;;   (cmake-ide-setup)
-;;   ;; (cmake-ide-falgs-c)
-;;   ;; (cmake-ide-flags-c++)
-;;   (setq cmake-ide-build-pool-dir "/home/zaid/build")
-;;   (setq cmake-ide-build-pool-use-persistent-naming t))
+(use-package cmake-ide
+  :ensure t
+  :config
+  (cmake-ide-setup)
+  ;; (cmake-ide-falgs-c)
+  ;; (cmake-ide-flags-c++)
+  (setq cmake-ide-build-pool-dir "/home/zaid/build")
+  (setq cmake-ide-build-pool-use-persistent-naming t))
 
 ;; Golang
 (use-package go-mode
@@ -432,7 +441,7 @@
     ("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" default)))
  '(package-selected-packages
    (quote
-    (popwin neotree magit ag swiper-helm helm-rg helm-ag cmake-ide company-yasnippet company-rtags helm-rtags rtags irony-eldoc flycheck-irony yasnippet-snippets yasnippet company-irony-c-headers company-irony irony zenburn-theme yaml-mode which-key use-package sublimity solarized-theme smooth-scrolling smooth-scroll smartparens smart-mode-line-powerline-theme org-bullets multiple-cursors minimap markdown-mode helm-projectile flycheck evil dimmer dashboard counsel company-go auto-complete ace-window))))
+    (srefactor popwin neotree magit ag swiper-helm helm-rg helm-ag cmake-ide company-yasnippet company-rtags helm-rtags rtags irony-eldoc flycheck-irony yasnippet-snippets yasnippet company-irony-c-headers company-irony irony zenburn-theme yaml-mode which-key use-package sublimity solarized-theme smooth-scrolling smooth-scroll smartparens smart-mode-line-powerline-theme org-bullets multiple-cursors minimap markdown-mode helm-projectile flycheck evil dimmer dashboard counsel company-go auto-complete ace-window))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
