@@ -1,4 +1,4 @@
-(setq user-full-name "Zaid Alshathry")
+F(setq user-full-name "Zaid Alshathry")
 (setq user-mail-address "zmzshathry@gmail.com")
 
 (tool-bar-mode -1)
@@ -61,7 +61,7 @@
   (dashboard-setup-startup-hook))
 
 ;; Ido
-(setq ido-everywhere t)
+(setq Ido-everywhere t)
 (ido-mode)
 
 ;; helm
@@ -74,6 +74,9 @@
   (:map helm-map ("<tab>" . helm-execute-persistent-action))
   ("C-i" . helm-execute-persistent-action)
   ("C-z" . helm-select-action)
+  :hook ((eshell-mode . helm-mode)
+         (shell-mode . helm-mode)
+         (term-mode . helm-mode))
   :config
   (setq helm-M-x-fuzzy-match t)
   (setq helm-buffers-fuzzy-matching t)
@@ -88,6 +91,7 @@
   ("C-s" . swiper)
   :config
   (setq swiper-helm-display-function 'helm-default-display-buffer))
+
 ;; ripgrep
 (use-package ripgrep
   :ensure t)
@@ -98,6 +102,7 @@
   :ensure t
   :config
   (setq helm-rg-thing-at-point t))
+
 ;; ag for searching in code files
 (use-package ag
   :ensure t)
@@ -107,7 +112,6 @@
   :bind
   :config
   (setq helm-ag-insert-at-point 'symbol))
-
 
 ;; Projectile
 (use-package projectile
@@ -121,7 +125,6 @@
         ("F" . helm-projectile-find-file-in-known-projects)
         ("g" . helm-projectile-find-file-dwim)
         ("d" . helm-projectile-dired)
-        ;; ("r" . helm-projectile-recetf)
         ("b" . helm-projectile-switch-to-buffer)
         ("s g" . helm-projectile-grep)
         ("s a" . helm-projectile-ag)
@@ -138,7 +141,7 @@
 (use-package helm-projectile
   :ensure t
   :config
-  (helm-projectile-on)))
+  (helm-projectile-on))
 
 ;; neotree
 (use-package neotree
@@ -340,6 +343,10 @@
 (bind-keys :map global-map
            :prefix-map my-window-map
            :prefix my-window-prefix
+           ("f n" . make-frame)
+           ("f d" . delete-frame)
+           ("f D" . delete-other-frames)
+           ("f o" . other-frame)
            ("s" . split-window-below)
            ("v" . split-window-right)
            ("S" . my/split-window-below-and-move)
@@ -430,6 +437,15 @@
   :config
   (push '("^\*helm.+\*$" :regexp t) popwin:special-display-config)
   (popwin-mode 1))
+
+(use-package smart-mode-line
+  :ensure t
+  :config
+  (use-package smart-mode-line-powerline-theme
+    :ensure t)
+  (sml/setup)
+  (setq sml/theme 'respectful))
+
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
