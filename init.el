@@ -1,4 +1,4 @@
-F(setq user-full-name "Zaid Alshathry")
+(setq user-full-name "Zaid Alshathry")
 (setq user-mail-address "zmzshathry@gmail.com")
 
 (tool-bar-mode -1)
@@ -20,6 +20,8 @@ F(setq user-full-name "Zaid Alshathry")
 (set-default-coding-systems 'utf-8)
 (set-selection-coding-system 'utf-8)
 (prefer-coding-system 'utf-8)
+
+(set-face-attribute 'default nil :font "Monaco" :height 120)
 
 ;; Use spaces for indentations
 (setq-default indent-tabs-mode nil)
@@ -60,108 +62,124 @@ F(setq user-full-name "Zaid Alshathry")
   :config
   (dashboard-setup-startup-hook))
 
-;; Ido
-(setq Ido-everywhere t)
-(ido-mode)
-
-;; helm
-(use-package helm
-  :bind 
-  ("M-x" . helm-M-x)
-  ("C-x C-f" . helm-find-files)
-  ("M-y" . helm-show-kill-ring)
-  ("C-x b" . helm-mini)
-  (:map helm-map ("<tab>" . helm-execute-persistent-action))
-  ("C-i" . helm-execute-persistent-action)
-  ("C-z" . helm-select-action)
-  :hook ((eshell-mode . helm-mode)
-         (shell-mode . helm-mode)
-         (term-mode . helm-mode))
-  :config
-  (setq helm-M-x-fuzzy-match t)
-  (setq helm-buffers-fuzzy-matching t)
-  (setq helm-window-prefer-horizontal-split 'decide)
-  (helm-autoresize-mode))
-
-;; Search packages
-;; swiper
-(use-package swiper-helm
-  :ensure t
-  :bind
-  ("C-s" . swiper)
-  :config
-  (setq swiper-helm-display-function 'helm-default-display-buffer))
-
 ;; ripgrep
 (use-package ripgrep
   :ensure t)
 
-(use-package helm-rg
-  :requires helm ripgrep
-  :bind
-  :ensure t
-  :config
-  (setq helm-rg-thing-at-point t))
-
 ;; ag for searching in code files
 (use-package ag
-  :ensure t)
-(use-package helm-ag
-  :requires helm ag
+  :ensure t
+  :config
+  (add-hook 'ag-mode-hook 'toggle-truncate-lines)
+  (setq ag-highlight-search t)
+  (setq ag-reuse-buffers 't))
+
+;; ivy
+(use-package ivy
+  :ensure t
+  :bind (("C-s" . swiper))
+  :config
+  (setq ivy-use-virtual-buffers t)
+  (setq ivy-count-format "(%d/%d) ")
+  (ivy-mode 1))
+
+(use-package counsel
   :ensure t
   :bind
-  :config
-  (setq helm-ag-insert-at-point 'symbol))
+  ("M-x" . counsel-M-x)
+  ("C-x C-f" . counsel-find-file)
+  ("<f6>" . ivy-resume)
+  ("<f1> f" . counsel-describe-function)
+  ("<f1> v" . counsel-describe-variable)
+  ("<f1> l" . counsel-find-library)
+  ("<f1> i" . counsel-info-lookup-symbol)
+  ("<f1> u" . counsel-unicode-char)
+  ("M-y" . counsel-yank-pop))
+
+;; projectile command keymap
+(setq my-project-prefix (concat my-prefix "p"))
 
 ;; Projectile
 (use-package projectile
   :ensure t
   :bind-keymap
   ("C-c p" . projectile-command-map)
-  :bind
-  (:map projectile-command-map
-        ("p" . helm-projectile-switch-project)
-        ("f" . helm-projectile-find-file)
-        ("F" . helm-projectile-find-file-in-known-projects)
-        ("g" . helm-projectile-find-file-dwim)
-        ("d" . helm-projectile-dired)
-        ("b" . helm-projectile-switch-to-buffer)
-        ("s g" . helm-projectile-grep)
-        ("s a" . helm-projectile-ag)
-        ("s r" . helm-projectile-rg)
-        ("s R" . helm-projectile-rg-at-point))
   :config
   (projectile-global-mode)
-
-  (setq projectile-completion-system 'helm
+  (setq projectile-mode-line
+        '(:eval (format " [%s]" (projectile-project-name)))
+        projectile-remember-window-configs t
+        projectile-completion-system 'ivy
         projectile-file-exists-remote-cache-expire nil)
-
   (projectile-load-known-projects))
 
-(use-package helm-projectile
-  :ensure t
-  :config
-  (helm-projectile-on))
+(which-key-add-key-based-replacements
+  my-project-prefix "project")
 
-;; neotree
-(use-package neotree
+(use-package counsel-projectile
   :ensure t
-  :bind (:map global-map
-              ("<f8>" . neotree-project-dir))
   :config
-  (defun neotree-project-dir ()
-    "Open NeoTree using the git root."
-    (interactive)
-    (let ((project-dir (projectile-project-root))   
-          (file-name (buffer-file-name)))
-      (neotree-toggle)
-      (if project-dir
-          (if (neo-global--window-exists-p)
-              (progn
-                (neotree-dir project-dir)
-                (neotree-find file-name)))
-        (message "Could not find git project root.")))))
-    
+  (counsel-projectile-mode))
+
+;;treemacs
+(use-package treemacs
+  :ensure t
+  :defer t
+  :init
+  (with-eval-after-load 'winum
+    (define-key winum-keymap (kbd "M-0") #'treemacs-select-window))
+  :config
+  (progn
+    (setq treemacs-collapse-dirs              (if (executable-find "python") 3 0)
+          treemacs-deferred-git-apply-delay   0.5
+          treemacs-display-in-side-window     t
+          treemacs-file-event-delay           5000
+          treemacs-file-follow-delay          0.2
+          treemacs-follow-after-init          t
+          treemacs-follow-recenter-distance   0.1
+          treemacs-goto-tag-strategy          'refetch-index
+          treemacs-indentation                2
+          treemacs-indentation-string         " "
+          treemacs-is-never-other-window      nil
+          treemacs-no-png-images              nil
+          treemacs-project-follow-cleanup     nil
+          treemacs-persist-file               (expand-file-name ".cache/treemacs-persist" user-emacs-directory)
+          treemacs-recenter-after-file-follow nil
+          treemacs-recenter-after-tag-follow  nil
+          treemacs-show-hidden-files          t
+          treemacs-silent-filewatch           nil
+          treemacs-silent-refresh             nil
+          treemacs-sorting                    'alphabetic-desc
+          treemacs-space-between-root-nodes   t
+          treemacs-tag-follow-cleanup         t
+          treemacs-tag-follow-delay           1.5
+          treemacs-width                      35)
+
+    ;; The default width and height of the icons is 22 pixels. If you are
+    ;; using a Hi-DPI display, uncomment this to double the icon size.
+    ;;(treemacs-resize-icons 44)
+
+    (treemacs-follow-mode t)
+    (treemacs-filewatch-mode t)
+    (treemacs-fringe-indicator-mode t)
+    (pcase (cons (not (null (executable-find "git")))
+                 (not (null (executable-find "python3"))))
+      (`(t . t)
+       (treemacs-git-mode 'extended))
+      (`(t . _)
+       (treemacs-git-mode 'simple))))
+  :bind
+  (:map global-map
+        ("M-0"       . treemacs-select-window)
+        ("C-x t 1"   . treemacs-delete-other-windows)
+        ("C-x t t"   . treemacs)
+        ("C-x t B"   . treemacs-bookmark)
+        ("C-x t C-t" . treemacs-find-file)
+        ("C-x t M-t" . treemacs-find-tag)))
+
+(use-package treemacs-projectile
+  :after treemacs projectile
+  :ensure t)
 
 ;; Company
 (use-package company
@@ -191,57 +209,48 @@ F(setq user-full-name "Zaid Alshathry")
   :ensure t
   :defer t
   :bind (("C-c g" . magit-status)))
-;; C/C++
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;; C/C++ ;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq-default c-basic-offset 4)
-(use-package irony
+;; cquery + lsp
+(use-package cquery
   :ensure t
-  :hook (((irony-mode . (lambda () ([remap completion-at-point] . irony-completion-at-point-async)))
-          (irony-mode . (lambda () ([remap complete-symbol] . irony-completion-at-point-async)))
-          (irony-mode . irony-cdb-autosetup-compile-options)))
-  :init
-  (add-hook 'c-mode-hook #'irony-mode)
-  (add-hook 'c++-mode-hook #'irony-mode)
+  :commands lsp-cquery-enable
+  :hook
+  ((c-mode c++-mode) . lsp-cquery-enable)
   :config
-  ;; ; set clang headers for MacOS
-  (if (eq system-type 'darwin) (setq irony-additional-clang-options '("-I/usr/local/include"
-                                     "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include/c++/v1"
-                                     "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/clang/9.1.0/include"
-                                     "-I/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include"
-                                     "-I/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.13.sdk/usr/include"))))
-(use-package company-irony
+  (setq cquery-executable "/Users/zaid/workspace/cquery/build/release/bin/cquery")
+  (setq cquery-sem-highlight-method 'font-lock)
+  (setq cquery-extra-init-params '(:cacheFormat "msgpack" :completion (:detailedLabel t) :xref (:container t))))
+  ;; (cquery-use-default-rainbow-sem-highlight))
+
+(use-package lsp-mode
   :ensure t
-  :requires company
-  :after irony
-  :hook ((irony-mode . company-irony-setup-begin-commands)
-         (irony-mode . (lambda ()
-                         (add-to-list 'company-backends 'company-irony))))
   :config
-  (setq company-irony-ignore-case 'smart))
+  :hook (lsp-after-open-hook . lsp-enable-imenu))
 
-(use-package company-irony-c-headers
+(use-package lsp-ui
   :ensure t
-  :requires company
-  :after irony
-  :hook (irony-mode . (lambda ()
-                        (add-to-list 'company-backends 'company-irony-c-headers))))
+  :hook (lsp-mode . lsp-ui-mode)
+  :config
+   (setq lsp-ui-sideline-enable nil
+        lsp-ui-doc-enable t
+        lsp-ui-flycheck-enable t
+        lsp-ui-imenu-enable t
+        lsp-ui-sideline-ignore-duplicate t))
 
-(use-package irony-eldoc
-  :ensure t    
-  :after irony
-  :hook irony-mode)
-
-(use-package flycheck-irony
+(use-package company-lsp
   :ensure t
-  :requires flycheck
-  :hook ((irony-mode . flycheck-mode)
-         (flycheck-mode . flycheck-irony-setup)))
-
-(use-package srefactor
-  :ensure t
-  :bind (:map c-mode-map
-              ("M-RET" . srefactor-refactor-at-point))
-  :bind (:map c++-mode-map
-        ("M-RET" . srefactor-refactor-at-point)))
+  :hook (lsp-mode . (lambda ()
+                            (add-to-list 'company-backends 'company-lsp))))
+;; (use-package srefactor
+;;   :ensure t
+;;   :bind (:map c-mode-map
+;;               ("M-RET" . srefactor-refactor-at-point))
+;;   :bind (:map c++-mode-map
+;;         ("M-RET" . srefactor-refactor-at-point)))
 
 (use-package cmake-mode
   :mode (("CMakeLists\\.txt" . cmake-mode)
@@ -253,39 +262,8 @@ F(setq user-full-name "Zaid Alshathry")
   :hook (cmake-mode . (lambda ()
                         (add-to-list 'company-backends 'company-cmake))))
 
-(use-package rtags
-  :ensure t
-  :commands rtags-start-process-unless-running
-  :hook ((c-mode c++-mode) . rtags-start-process-unless-running)
-  :bind ([remap imenu] . rtags-imenu)
-  :config
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-  (setq rtags-completions-enabled t
-        rtags-autostart-diagnostics t
-        rtags-use-bookmarks nil
-        rtags-completions-enabled nil
-        rtags-results-buffer-other-window t
-        rtags-jump-to-first-match nil
-        rtags-display-result-backend 'helm)
-  (rtags-enable-standard-keybindings))
-
-(use-package company-rtags
-  :ensure t
-  :requires company
-  :hook (rtags-mode . (lambda ()
-                        (add-to-list 'company-backends 'company-rtags))))
-
-(use-package helm-rtags
-  :ensure t)
-
-(use-package cmake-ide
-  :ensure t
-  :config
-  (cmake-ide-setup)
-  ;; (cmake-ide-falgs-c)
-  ;; (cmake-ide-flags-c++)
-  (setq cmake-ide-build-pool-dir "/home/zaid/build")
-  (setq cmake-ide-build-pool-use-persistent-naming t))
 
 ;; Golang
 (use-package go-mode
@@ -369,26 +347,28 @@ F(setq user-full-name "Zaid Alshathry")
   (concat my-window-prefix "o") "other-window"
   (concat my-window-prefix "M") "swap-window")
 
-;; search commands keymap
+;; search command keymap
 (setq my-search-prefix (concat my-prefix "s"))
 ;; Bind search commands
 (bind-keys :map global-map
            :prefix-map my-search-map
            :prefix my-search-prefix
            ("s" . swiper)
-           ("a" . helm-ag)
-           ("g" . helm-grep)
-           ("r" . helm-rg)
-           ("R" . helm-rg-at-point))
+           ("a" . counsel-ag)
+           ("r" . counsel-rg))
+(which-key-add-key-based-replacements
+  my-search-prefix "search")
 
 ;; file commands keymap
+(setq my-file-prefix (concat my-prefix "f"))
 ;; Bind file commands
 (bind-keys :map global-map
            :prefix-map my-file-map
-           :prefix (concat my-prefix "f")
-           ("f" . helm-find-files)
+           :prefix my-file-prefix
            ("c" . copy-file)
            ("s" . save-buffer))
+(which-key-add-key-based-replacements
+  my-file-prefix "file")
 
 ;; Smartparens ()
 (use-package smartparens
@@ -396,11 +376,15 @@ F(setq user-full-name "Zaid Alshathry")
   :config
   (smartparens-global-mode t))
 
-;; zenburn-theme
-(use-package zenburn-theme
+;; doom-theme
+(use-package doom-themes
   :ensure t
   :config
-  (load-theme 'zenburn t))
+  (load-theme 'doom-vibrant t)
+  (doom-themes-visual-bell-config)
+  (doom-themes-treemacs-config)
+  (doom-themes-org-config)
+  (setq nlinum-highlight-current-line t))
 
 ;; Dimmer: visually highlight the selected window
 (use-package dimmer
@@ -430,37 +414,28 @@ F(setq user-full-name "Zaid Alshathry")
 
 (use-package popwin
   :ensure t
-  :hook ((helm-after-initialize-hook . (lambda ()
-                                         (popwin:display-buffer helm-buffer t)
-                                         (popwin-mode -1)))
-         (helm-cleanup-hook . (lambda () (popwin-mode -1))))
+  :bind ("C-h e" . popwin:messages)
+  :bind-keymap ("C-z" . popwin:keymap)
+  :init
+  (popwin-mode)
   :config
-  (push '("^\*helm.+\*$" :regexp t) popwin:special-display-config)
-  (popwin-mode 1))
-
-(use-package smart-mode-line
-  :ensure t
-  :config
-  (use-package smart-mode-line-powerline-theme
-    :ensure t)
-  (sml/setup)
-  (setq sml/theme 'respectful))
-
-
-(custom-set-variables
- ;; custom-set-variables was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   (quote
-    ("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" default)))
- '(package-selected-packages
-   (quote
-    (srefactor popwin neotree magit ag swiper-helm helm-rg helm-ag cmake-ide company-yasnippet company-rtags helm-rtags rtags irony-eldoc flycheck-irony yasnippet-snippets yasnippet company-irony-c-headers company-irony irony zenburn-theme yaml-mode which-key use-package sublimity solarized-theme smooth-scrolling smooth-scroll smartparens smart-mode-line-powerline-theme org-bullets multiple-cursors minimap markdown-mode helm-projectile flycheck evil dimmer dashboard counsel company-go auto-complete ace-window))))
-(custom-set-faces
- ;; custom-set-faces was added by Custom.
- ;; If you edit it by hand, you could mess it up, so be careful.
- ;; Your init file should contain only one such instance.
- ;; If there is more than one, they won't work right.
- )
+  (--each '("*Apropos*"
+            "*Warnings*"
+            "*Ack-and-a-half*"
+            "*Compile-Log*"
+            "*projectile-rails-generate*"
+            "*Package Commit List*"
+            "*Compile-Log*"
+            "*compilation*"
+            "*Flycheck errors*"
+            ("*Flycheck error messages*" :noselect t)
+            "*js*"
+            "*Python*")
+    (push it popwin:special-display-config)))
+;; (use-package smart-mode-line
+;;   :ensure t
+;;   :config
+;;   (use-package smart-mode-line-powerline-theme
+;;     :ensure t)
+;;   (sml/setup)
+;;   (setq sml/theme 'dark))
