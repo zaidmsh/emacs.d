@@ -96,6 +96,11 @@
   ("<f1> u" . counsel-unicode-char)
   ("M-y" . counsel-yank-pop))
 
+(use-package smex
+  :ensure t
+  :config
+  (setq smex-history-length 10))
+
 ;; projectile command keymap
 (setq my-project-prefix (concat my-prefix "p"))
 
@@ -370,6 +375,13 @@
 (which-key-add-key-based-replacements
   my-file-prefix "file")
 
+;; undo-tree
+(use-package undo-tree
+  :ensure t
+  :bind ("C-c u" . undo-tree-visualize)
+  :config
+  (global-undo-tree-mode))
+
 ;; Smartparens ()
 (use-package smartparens
   :ensure t
@@ -416,26 +428,34 @@
   :ensure t
   :bind ("C-h e" . popwin:messages)
   :bind-keymap ("C-z" . popwin:keymap)
-  :init
-  (popwin-mode)
   :config
-  (--each '("*Apropos*"
-            "*Warnings*"
-            "*Ack-and-a-half*"
-            "*Compile-Log*"
-            "*projectile-rails-generate*"
-            "*Package Commit List*"
-            "*Compile-Log*"
-            "*compilation*"
-            "*Flycheck errors*"
-            ("*Flycheck error messages*" :noselect t)
-            "*js*"
-            "*Python*")
-    (push it popwin:special-display-config)))
-;; (use-package smart-mode-line
-;;   :ensure t
-;;   :config
-;;   (use-package smart-mode-line-powerline-theme
-;;     :ensure t)
-;;   (sml/setup)
-;;   (setq sml/theme 'dark))
+  (push '("*Help*" :noselect nil) popwin:special-display-config)
+  (push '("*Apropos*" :noselect nil) popwin:special-display-config)
+  (push '("*Macroexpansion*" :noselect nil :stick t :dedicated t) popwin:special-display-config)
+  (popwin-mode 1))
+
+(use-package smart-mode-line
+  :ensure t
+  :config
+  (use-package smart-mode-line-powerline-theme
+    :ensure t)
+  (sml/setup)
+  (setq sml/theme 'dark))
+
+(custom-set-variables
+ ;; custom-set-variables was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ '(custom-safe-themes
+   (quote
+    ("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" default)))
+ '(package-selected-packages
+   (quote
+    (smex zenburn-theme yasnippet-snippets yaml-mode which-key use-package treemacs-projectile srefactor smooth-scrolling smartparens smart-mode-line-powerline-theme ripgrep popwin org-bullets multiple-cursors magit lsp-ui lsp-rust lsp-go lsp-clangd irony-eldoc flycheck-irony doom-themes dimmer dashboard cquery counsel-projectile company-go cmake-ide ag))))
+(custom-set-faces
+ ;; custom-set-faces was added by Custom.
+ ;; If you edit it by hand, you could mess it up, so be careful.
+ ;; Your init file should contain only one such instance.
+ ;; If there is more than one, they won't work right.
+ )
