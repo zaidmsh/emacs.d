@@ -94,7 +94,8 @@
   ("<f1> l" . counsel-find-library)
   ("<f1> i" . counsel-info-lookup-symbol)
   ("<f1> u" . counsel-unicode-char)
-  ("M-y" . counsel-yank-pop))
+  ("M-y" . counsel-yank-pop)
+  ("C-c i" . counsel-imenu))
 
 (use-package smex
   :ensure t
@@ -194,7 +195,7 @@
   (setq company-idle-delay 0
         company-dabbrev-downcase nil)
   (add-to-list 'company-backends '(company-keywords company-elisp company-yasnippet))
-  (global-company-mode))
+  (global-company-mode 1))
 
 (use-package flycheck
   :ensure t
@@ -220,21 +221,11 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq-default c-basic-offset 4)
 ;; cquery + lsp
-(use-package cquery
-  :ensure t
-  :commands lsp-cquery-enable
-  :hook
-  ((c-mode c++-mode) . lsp-cquery-enable)
-  :config
-  (setq cquery-executable "/Users/zaid/workspace/cquery/build/release/bin/cquery")
-  (setq cquery-sem-highlight-method 'font-lock)
-  (setq cquery-extra-init-params '(:cacheFormat "msgpack" :completion (:detailedLabel t) :xref (:container t))))
-  ;; (cquery-use-default-rainbow-sem-highlight))
-
 (use-package lsp-mode
   :ensure t
+  :hook (lsp-after-open . lsp-enable-imenu)
   :config
-  :hook (lsp-after-open-hook . lsp-enable-imenu))
+  (require 'lsp-imenu))
 
 (use-package lsp-ui
   :ensure t
@@ -244,12 +235,28 @@
         lsp-ui-doc-enable t
         lsp-ui-flycheck-enable t
         lsp-ui-imenu-enable t
+        lsp-ui-imenu-kind-position 'left
         lsp-ui-sideline-ignore-duplicate t))
 
 (use-package company-lsp
+  :requires company lsp-mode
   :ensure t
-  :hook (lsp-mode . (lambda ()
-                            (add-to-list 'company-backends 'company-lsp))))
+  :config
+  (setq company-lsp-cache-candidates 'auto
+        company-lsp-enable-snippet t
+        company-lsp-enable-recompletion t)
+  (push 'company-lsp company-backends))
+
+(use-package cquery
+  :ensure t
+  :hook
+  ((c-mode c++-mode) . lsp-cquery-enable)
+  :config
+  (setq cquery-executable "/Users/zaid/workspace/cquery/build/release/bin/cquery")
+  (setq cquery-sem-highlight-method 'font-lock)
+  (setq cquery-extra-init-params '(:cacheFormat "msgpack" :completion (:detailedLabel t) :xref (:container t))))
+  ;; (cquery-use-default-rainbow-sem-highlight))
+
 ;; (use-package srefactor
 ;;   :ensure t
 ;;   :bind (:map c-mode-map
@@ -262,8 +269,7 @@
          ("\\.cmake" . cmake-mode)))
 
 (use-package company-cmake
-  :requires company
-  :after cmake-mode
+  :requires company cmake
   :hook (cmake-mode . (lambda ()
                         (add-to-list 'company-backends 'company-cmake))))
 
@@ -296,6 +302,10 @@
          ("\\.md'" . markdown-mode)
          ("\\.markdown'" . markdown-mode)))
 
+;; dash
+(use-package dash
+  :ensure t
+  :defer t)
 ;; Multiple-cursors
 (use-package multiple-cursors
   :ensure t
@@ -396,7 +406,16 @@
   (doom-themes-visual-bell-config)
   (doom-themes-treemacs-config)
   (doom-themes-org-config)
+  (set-face-attribute 'region nil :background "#666")
   (setq nlinum-highlight-current-line t))
+
+(use-package doom-modeline
+      :ensure t
+      :defer t
+      :hook (after-init . doom-modeline-init)
+      :config
+      (setq mode-line-modes t))
+
 
 ;; Dimmer: visually highlight the selected window
 (use-package dimmer
@@ -434,14 +453,6 @@
   (push '("*Macroexpansion*" :noselect nil :stick t :dedicated t) popwin:special-display-config)
   (popwin-mode 1))
 
-(use-package smart-mode-line
-  :ensure t
-  :config
-  (use-package smart-mode-line-powerline-theme
-    :ensure t)
-  (sml/setup)
-  (setq sml/theme 'dark))
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
@@ -449,10 +460,10 @@
  ;; If there is more than one, they won't work right.
  '(custom-safe-themes
    (quote
-    ("3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" default)))
+    ("bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" default)))
  '(package-selected-packages
    (quote
-    (smex zenburn-theme yasnippet-snippets yaml-mode which-key use-package treemacs-projectile srefactor smooth-scrolling smartparens smart-mode-line-powerline-theme ripgrep popwin org-bullets multiple-cursors magit lsp-ui lsp-rust lsp-go lsp-clangd irony-eldoc flycheck-irony doom-themes dimmer dashboard cquery counsel-projectile company-go cmake-ide ag))))
+    (ivy-xref doom-modeline spacemacs-theme smex zenburn-theme yasnippet-snippets yaml-mode which-key use-package treemacs-projectile srefactor smooth-scrolling smartparens smart-mode-line-powerline-theme ripgrep popwin org-bullets multiple-cursors magit lsp-ui lsp-rust lsp-go lsp-clangd irony-eldoc flycheck-irony doom-themes dimmer dashboard cquery counsel-projectile company-go cmake-ide ag))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
