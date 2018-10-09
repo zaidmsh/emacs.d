@@ -221,6 +221,22 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 (setq-default c-basic-offset 4)
 ;; cquery + lsp
+(use-package ccls
+  :ensure t
+  :commands (lsp-ccls-enable)
+  :hook
+  ((c-mode c++-mode) . lsp-ccls-enable)
+  :config
+  (setq ccls-executable "/Users/zaid/workspace/ccls/Release/ccls")
+  (setq ccls-sem-highlight-method 'font-lock)
+  (setq ccls-extra-init-params '(:index (:comments 2) :completion (:detailedLabel t)))
+  (with-eval-after-load 'projectile
+  (setq projectile-project-root-files-top-down-recurring
+        (append '("compile_commands.json"
+                  ".ccls")
+                projectile-project-root-files-top-down-recurring))))
+
+
 (use-package lsp-mode
   :ensure t
   :hook (lsp-after-open . lsp-enable-imenu)
@@ -245,17 +261,9 @@
   (setq company-lsp-cache-candidates 'auto
         company-lsp-enable-snippet t
         company-lsp-enable-recompletion t)
+  (setq company-transformers nil company-lsp-async t company-lsp-cache-candidates t)
   (push 'company-lsp company-backends))
 
-(use-package cquery
-  :ensure t
-  :hook
-  ((c-mode c++-mode) . lsp-cquery-enable)
-  :config
-  (setq cquery-executable "/Users/zaid/workspace/cquery/build/release/bin/cquery")
-  (setq cquery-sem-highlight-method 'font-lock)
-  (setq cquery-extra-init-params '(:cacheFormat "msgpack" :completion (:detailedLabel t) :xref (:container t))))
-  ;; (cquery-use-default-rainbow-sem-highlight))
 
 ;; (use-package srefactor
 ;;   :ensure t
@@ -301,6 +309,15 @@
   :mode (("README\\.md'" . gfm-mode)
          ("\\.md'" . markdown-mode)
          ("\\.markdown'" . markdown-mode)))
+
+;; systemd mode
+(use-package systemd
+  :ensure t
+  :config
+  :mode (("\\.service" . systemd-mode)
+         ("\\.timer" . systemd-mode)
+         ("\\.path" . systemd-mode)
+         ("\\.target" . system-mode)))
 
 ;; dash
 (use-package dash
@@ -463,7 +480,7 @@
     ("bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" default)))
  '(package-selected-packages
    (quote
-    (ivy-xref doom-modeline spacemacs-theme smex zenburn-theme yasnippet-snippets yaml-mode which-key use-package treemacs-projectile srefactor smooth-scrolling smartparens smart-mode-line-powerline-theme ripgrep popwin org-bullets multiple-cursors magit lsp-ui lsp-rust lsp-go lsp-clangd irony-eldoc flycheck-irony doom-themes dimmer dashboard cquery counsel-projectile company-go cmake-ide ag))))
+    (systemd systemd-mode ivy-xref doom-modeline spacemacs-theme smex zenburn-theme yasnippet-snippets yaml-mode which-key use-package treemacs-projectile srefactor smooth-scrolling smartparens smart-mode-line-powerline-theme ripgrep popwin org-bullets multiple-cursors magit lsp-ui lsp-rust lsp-go lsp-clangd irony-eldoc flycheck-irony doom-themes dimmer dashboard cquery counsel-projectile company-go cmake-ide ag))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
