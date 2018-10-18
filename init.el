@@ -62,6 +62,12 @@
   :config
   (dashboard-setup-startup-hook))
 
+;; hydra: tie related commands into a family of short bindings with a common
+;; prefix - a Hydra
+;; https://github.com/abo-abo/hydra
+(use-package hydra
+  :config (hydra-add-font-lock))
+
 ;; ripgrep
 (use-package ripgrep
   :ensure t)
@@ -190,25 +196,81 @@
 ;; Company
 (use-package company
   :ensure t
+  :bind
+  (("M-/" . hippie-expand) ;; replace `dabbrev-expand' with `hippie-expand' which does a lot more
+   ("C-<tab>" . company-dabbrev))
+  (:map company-active-map
+        ("M-p" . nil)
+        ("M-n" . nil)
+        ("C-m" . nil)
+        ("C-h" . nil)
+        ("C-n" . company-select-next)
+        ("C-p" . company-select-previous)
+        ("<tab>" . company-complete-common)
+        ("C-t" . company-show-doc-buffer))
+
   :config
-  (global-set-key (kbd "M-/") 'company-complete-common-or-cycle)
-  (setq company-idle-delay 0
-        company-dabbrev-downcase nil)
-  (add-to-list 'company-backends '(company-keywords company-elisp company-yasnippet))
-  (global-company-mode 1))
+  (setq company-tooltip-flip-when-above t)
+  (setq company-minimum-prefix-length 3)
+  (setq company-idle-delay 0.2)
+  (setq company-selection-wrap-around t)
+  (setq company-show-numbers t)
+  (setq company-require-match 'never)
+  (setq company-tooltip-align-annotations t)
+
+  ;; don't downcase results from company-dabbrev
+  (setq company-dabbrev-downcase nil)
+  ;; use only buffers with same major-mode for company-dabbrev
+  (setq company-dabbrev-other-buffers t)
+  (global-company-mode))
 
 (use-package flycheck
   :ensure t
   :config
   (flycheck-mode t))
- 
+
+
+;; a collection of yasnippet snippets for many languages
+;; https://github.com/AndreaCrotti/yasnippet-snippets
+(use-package yasnippet-snippets
+  :ensure t)
+
 (use-package yasnippet
-  :ensure t
+  :commands (yas-minor-mode-on yas-expand yas-expand-snippet yas-lookup-snippet
+             yas-insert-snippet yas-new-snippet yas-visit-snippet-file)
+  :requires yasnippet-snippets
+  :hook ((text-mode prog-mode snippet-mode) . yas-minor-mode-on)
   :init
-  (yas-global-mode 1)
+  ;; Ensure `yas-reload-all' is called as late as possible. Other modules could
+  ;; have additional configuration for yasnippet. For example, file-templates.
+  ;; (add-transient-hook! 'yas-minor-mode-hook (yas-reload-all))
   :config
-  (use-package yasnippet-snippets
-    :ensure t))
+  (setq yas-triggers-in-field t) ; Enable nested triggering of snippets
+  (setq yas-prompt-functions '(yas-completing-prompt))
+  (add-hook 'snippet-mode-hook '(lambda () (setq-local require-final-newline nil)))
+  ;; No need to be so verbose
+  (setq yas-verbosity 1)
+  ;; Wrap around region
+  (setq yas-wrap-around-region t)
+  ;; Jump to end of snippet definition
+  (define-key yas-keymap (kbd "C-j") 'yas-exit-all-snippets)
+  ;; yasnippet command keymap
+  (bind-key "C-c y"
+            (defhydra hydra-yas (:color blue
+                                        :hint nil)
+              "
+_i_nsert    _n_ew       _v_isit     aya _c_reate
+_r_eload    e_x_pand    _?_ list    aya _e_xpand
+"
+              ("i" yas-insert-snippet)
+              ("n" yas-new-snippet)
+              ("v" yas-visit-snippet-file)
+              ("r" yas-reload-all)
+              ("x" yas-expand)
+              ("c" aya-create)
+              ("e" aya-expand)
+              ("?" yas-describe-tables)
+              ("q" nil "cancel" :color blue))))
 
 ;;;; magit
 (use-package magit
@@ -219,51 +281,225 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;; C/C++ ;;;;;;;;;;;;;;;;;;;;
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-(setq-default c-basic-offset 4)
-;; cquery + lsp
-(use-package ccls
-  :ensure t
-  :commands (lsp-ccls-enable)
-  :hook
-  ((c-mode c++-mode) . lsp-ccls-enable)
-  :config
-  (setq ccls-executable "/Users/zaid/workspace/ccls/Release/ccls")
-  (setq ccls-sem-highlight-method 'font-lock)
-  (setq ccls-extra-init-params '(:index (:comments 2) :completion (:detailedLabel t)))
-  (with-eval-after-load 'projectile
-  (setq projectile-project-root-files-top-down-recurring
-        (append '("compile_commands.json"
-                  ".ccls")
-                projectile-project-root-files-top-down-recurring))))
-
-
+;; lsp-mode:  Emacs client/library for the Language Server Protocol
+;; https://github.com/emacs-lsp/lsp-mode
 (use-package lsp-mode
-  :ensure t
-  :hook (lsp-after-open . lsp-enable-imenu)
   :config
-  (require 'lsp-imenu))
+  (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))
+  (add-to-list 'lsp-project-blacklist "^/Users/zaid/Library/Caches/Homebrew/emacs--git/$")
+  (add-to-list 'lsp-project-blacklist "^/Users/zaid/\\.emacs\\.d/$"))
 
-(use-package lsp-ui
-  :ensure t
-  :hook (lsp-mode . lsp-ui-mode)
-  :config
-   (setq lsp-ui-sideline-enable nil
-        lsp-ui-doc-enable t
-        lsp-ui-flycheck-enable t
-        lsp-ui-imenu-enable t
-        lsp-ui-imenu-kind-position 'left
-        lsp-ui-sideline-ignore-duplicate t))
-
+;; company-lsp: Company completion backend for lsp-mode.
+;; https://github.com/tigersoldier/company-lsp/
 (use-package company-lsp
-  :requires company lsp-mode
-  :ensure t
   :config
-  (setq company-lsp-cache-candidates 'auto
-        company-lsp-enable-snippet t
-        company-lsp-enable-recompletion t)
-  (setq company-transformers nil company-lsp-async t company-lsp-cache-candidates t)
   (push 'company-lsp company-backends))
 
+;; lsp-ui: This contains all the higher level UI modules of lsp-mode, like flycheck support and code lenses.
+;; https://github.com/emacs-lsp/lsp-ui
+(use-package lsp-ui
+  :config
+  (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
+  (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
+  (setq lsp-ui-sideline-enable nil
+        lsp-ui-doc-enable nil
+        lsp-ui-flycheck-enable t
+        lsp-ui-imenu-enable t
+        lsp-ui-sideline-ignore-duplicate t))
+
+;; cmake-font-lock: emacs font lock rules for CMake
+;; https://github.com/Lindydancer/cmake-font-lock
+(use-package cmake-font-lock
+  :ensure t
+  :config
+  (autoload 'cmake-font-lock-activate "cmake-font-lock" nil t)
+  (add-hook 'cmake-mode-hook 'cmake-font-lock-activate))
+
+;; adds font-lock highlighting for modern C++ upto C++17
+;; https://github.com/ludwigpacifici/modern-cpp-font-lock
+(use-package modern-cpp-font-lock
+  :ensure t
+  :hook (c++-mode . modern-c++-font-lock-mode))
+;; ccls: Emacs client for ccls, a C/C++ language server
+;; https://github.com/MaskRay/emacs-ccls
+(use-package ccls
+  :commands (lsp-css-enable)
+  :init
+;;;###autoload
+  (defvar +ccls-path-mappings [])
+
+;;;###autoload
+  (defvar +ccls-initial-blacklist [])
+
+  (setq ccls-executable (executable-find "/Users/zaid/workspace/ccls/Release/ccls"))
+
+  (setq
+   ccls-extra-init-params
+   `(:clang (:pathMappings ,+ccls-path-mappings)
+            :completion
+            (:includeBlacklist
+             ("^/usr/(local/)?include/c\\+\\+/[0-9\\.]+/(bits|tr1|tr2|profile|ext|debug)/"
+              "^/usr/(local/)?include/c\\+\\+/v1/"
+              ))
+            :index (:initialBlacklist ,+ccls-initial-blacklist :trackDependency 1)))
+  :config
+  ;; enable ccls semantic highlighting
+  (setq ccls-sem-highlight-method 'font-lock)
+
+  (with-eval-after-load 'projectile
+    (add-to-list 'projectile-globally-ignored-directories ".ccls-cache"))
+
+ ;; https://github.com/MaskRay/Config/blob/master/home/.config/doom/modules/private/my-cc/autoload.el#L10
+  (defun ccls/callee ()
+    (interactive)
+    (lsp-ui-peek-find-custom 'callee "$ccls/call" '(:callee t)))
+  (defun ccls/caller ()
+    (interactive)
+    (lsp-ui-peek-find-custom 'caller "$ccls/call"))
+  (defun ccls/vars (kind)
+    (lsp-ui-peek-find-custom 'vars "$ccls/vars" `(:kind ,kind)))
+  (defun ccls/base (levels)
+    (lsp-ui-peek-find-custom 'base "$ccls/inheritance" `(:levels ,levels)))
+  (defun ccls/derived (levels)
+    (lsp-ui-peek-find-custom 'derived "$ccls/inheritance" `(:levels ,levels :derived t)))
+  (defun ccls/member (kind)
+    (lsp-ui-peek-find-custom 'member "$ccls/member" `(:kind ,kind)))
+  ;; The meaning of :role corresponds to https://github.com/maskray/ccls/blob/master/src/symbol.h
+
+  ;; References w/ Role::Address bit (e.g. variables explicitly being taken addresses)
+  (defun ccls/references-address ()
+    (interactive)
+    (lsp-ui-peek-find-custom
+     'address "textDocument/references"
+     (plist-put (lsp--text-document-position-params) :context
+                '(:role 128))))
+
+  ;; References w/ Role::Dynamic bit (macro expansions)
+  (defun ccls/references-macro ()
+    (interactive)
+    (lsp-ui-peek-find-custom
+     'address "textDocument/references"
+     (plist-put (lsp--text-document-position-params) :context
+                '(:role 64))))
+
+  ;; References w/o Role::Call bit (e.g. where functions are taken addresses)
+  (defun ccls/references-not-call ()
+    (interactive)
+    (lsp-ui-peek-find-custom
+     'address "textDocument/references"
+     (plist-put (lsp--text-document-position-params) :context
+                '(:excludeRole 32))))
+
+  ;; References w/ Role::Read
+  (defun ccls/references-read ()
+    (interactive)
+    (lsp-ui-peek-find-custom
+     'read "textDocument/references"
+     (plist-put (lsp--text-document-position-params) :context
+                '(:role 8))))
+
+  ;; References w/ Role::Write
+  (defun ccls/references-write ()
+    (interactive)
+    (lsp-ui-peek-find-custom
+     'write "textDocument/references"
+     (plist-put (lsp--text-document-position-params) :context
+                '(:role 16)))))
+
+(defun ccls//enable ()
+  "Enable lsp-ccls"
+  (condition-case nil
+      (lsp-ccls-enable)
+    (user-error nil)))
+
+(use-package cc-mode :ensure nil
+  :hook (((c++-mode c-mode) . (lambda ()
+                                (ccls//enable)
+                                (lsp-ui-mode)
+                                (eldoc-mode)
+                                (lsp-ui-sideline-mode)
+                                (flycheck-mode)
+                                ;; (smart-dash-mode)
+                                (company-mode)
+                                (yas-minor-mode)))
+         ((c-mode c++-mode) . (lambda ()
+                                (add-hook 'before-save-hook
+                                          (lambda ()
+                                            (time-stamp)
+                                            (lsp-format-buffer)) nil t))))
+  :init
+  (c-add-style "llvm"
+               '("gnu"
+                 (fill-column . 80)
+                 (c++-indent-level . 4)
+                 (c-basic-offset . 4)
+                 (indent-tabs-mode . nil)
+                 (c-offsets-alist . ((arglist-intro . ++)
+                                     (innamespace . 0)
+                                     (member-init-intro . ++)))))
+  (setq c-default-style "llvm")
+
+  :config
+
+  (defun my-cc-common-mode-hook()
+    (set (make-local-variable 'company-backends)
+         '((company-lsp company-files :with company-yasnippet)
+           (company-dabbrev-code company-dabbrev))))
+  (add-hook 'c++-mode-hook #'my-cc-common-mode-hook)
+  (add-hook 'c-mode-hook #'my-cc-common-mode-hook)
+
+  (add-hook 'c++-mode-hook (lambda ()
+                             (setq-local company-transformers nil)
+                             (setq-local company-lsp-async t)
+                             (setq-local company-lsp-cache-candidates nil)))
+  (add-hook 'c-mode-hook (lambda ()
+                           (setq-local company-transformers nil)
+                           (setq-local company-lsp-async t)
+                           (setq-local company-lsp-cache-candidates nil)))
+
+  ;;;###autoload
+  (defun +cc|fontify-constants ()
+    "Better fontification for preprocessor constants"
+    (when (memq major-mode '(c-mode c++-mode))
+      (font-lock-add-keywords
+       nil '(("\\<[A-Z]*_[A-Z_]+\\>" . font-lock-constant-face)
+             ("\\<[A-Z]\\{3,\\}\\>"  . font-lock-constant-face))
+       t)))
+
+  ;; (sp-with-modes '(c-mode c++-mode)
+  ;;   (sp-local-pair "/*" "*/" :post-handlers '(("||\n[i]" "RET") ("| " "SPC")))
+  ;;   ;; Doxygen blocks
+  ;;   (sp-local-pair "/**" "*/" :post-handlers '(("||\n[i]" "RET") ("||\n[i]" "SPC")))
+  ;;   (sp-local-pair "/*!" "*/" :post-handlers '(("||\n[i]" "RET") ("[d-1]< | " "SPC"))))
+
+  (defun +cc--re-search-for (regexp)
+    (save-excursion
+      (save-restriction
+        (save-match-data
+          (widen)
+          (goto-char (point-min))
+          (re-search-forward regexp magic-mode-regexp-match-limit t)))))
+
+  (defun +cc-c-c++-objc-mode (&optional file)
+    "Sets either `c-mode', `objc-mode' or `c++-mode', whichever is appropriate."
+    (let ((base (file-name-sans-extension buffer-file-name))
+          file)
+      (cond ((file-exists-p! (or (concat base ".cpp")
+                                 (concat base ".cc")))
+             (c++-mode))
+            ((fboundp 'c-or-c++-mode) ; introduced in Emacs 26.1
+             (c-or-c++-mode))
+            ((+cc--re-search-for  ; TODO Remove this along with Emacs 25 support
+              (let ((id "[a-zA-Z0-9_]+") (ws "[ \t\r]+") (ws-maybe "[ \t\r]*"))
+                (concat "^" ws-maybe "\\(?:"
+                        "using"     ws "\\(?:namespace" ws "std;\\|std::\\)"
+                        "\\|" "namespace" "\\(:?" ws id "\\)?" ws-maybe "{"
+                        "\\|" "class"     ws id ws-maybe "[:{\n]"
+                        "\\|" "template"  ws-maybe "<.*>"
+                        "\\|" "#include"  ws-maybe "<\\(?:string\\|iostream\\|map\\)>"
+                        "\\)")))
+             (c++-mode))
+            ((c-mode))))))
 
 ;; (use-package srefactor
 ;;   :ensure t
@@ -277,9 +513,9 @@
          ("\\.cmake" . cmake-mode)))
 
 (use-package company-cmake
-  :requires company cmake
-  :hook (cmake-mode . (lambda ()
-                        (add-to-list 'company-backends 'company-cmake))))
+  :requires company cmake-mode
+  :config
+  (push 'company-cmake company-backends))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -469,18 +705,14 @@
   (push '("*Apropos*" :noselect nil) popwin:special-display-config)
   (push '("*Macroexpansion*" :noselect nil :stick t :dedicated t) popwin:special-display-config)
   (popwin-mode 1))
-
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
  ;; Your init file should contain only one such instance.
  ;; If there is more than one, they won't work right.
- '(custom-safe-themes
-   (quote
-    ("bffa9739ce0752a37d9b1eee78fc00ba159748f50dc328af4be661484848e476" "3c83b3676d796422704082049fc38b6966bcad960f896669dfc21a7a37a748fa" default)))
  '(package-selected-packages
    (quote
-    (systemd systemd-mode ivy-xref doom-modeline spacemacs-theme smex zenburn-theme yasnippet-snippets yaml-mode which-key use-package treemacs-projectile srefactor smooth-scrolling smartparens smart-mode-line-powerline-theme ripgrep popwin org-bullets multiple-cursors magit lsp-ui lsp-rust lsp-go lsp-clangd irony-eldoc flycheck-irony doom-themes dimmer dashboard cquery counsel-projectile company-go cmake-ide ag))))
+    (modern-cpp-font-lock cmake-font-lock yasnippet-snippets yaml-mode which-key use-package undo-tree treemacs-projectile systemd smooth-scrolling smex smartparens ripgrep popwin org-bullets multiple-cursors magit lsp-ui doom-themes doom-modeline dimmer dashboard cquery counsel-projectile company-lsp company-go ccls ag))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
