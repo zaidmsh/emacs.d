@@ -421,23 +421,7 @@ _r_eload    e_x_pand    _?_ list    aya _e_xpand
                                 (flycheck-mode)
                                 ;; (smart-dash-mode)
                                 (company-mode)
-                                (yas-minor-mode)))
-         ((c-mode c++-mode) . (lambda ()
-                                (add-hook 'before-save-hook
-                                          (lambda ()
-                                            (time-stamp)
-                                            (lsp-format-buffer)) nil t))))
-  :init
-  (c-add-style "llvm"
-               '("gnu"
-                 (fill-column . 80)
-                 (c++-indent-level . 4)
-                 (c-basic-offset . 4)
-                 (indent-tabs-mode . nil)
-                 (c-offsets-alist . ((arglist-intro . ++)
-                                     (innamespace . 0)
-                                     (member-init-intro . ++)))))
-  (setq c-default-style "llvm")
+                                (yas-minor-mode))))
 
   :config
 
@@ -471,36 +455,7 @@ _r_eload    e_x_pand    _?_ list    aya _e_xpand
   ;;   ;; Doxygen blocks
   ;;   (sp-local-pair "/**" "*/" :post-handlers '(("||\n[i]" "RET") ("||\n[i]" "SPC")))
   ;;   (sp-local-pair "/*!" "*/" :post-handlers '(("||\n[i]" "RET") ("[d-1]< | " "SPC"))))
-
-  (defun +cc--re-search-for (regexp)
-    (save-excursion
-      (save-restriction
-        (save-match-data
-          (widen)
-          (goto-char (point-min))
-          (re-search-forward regexp magic-mode-regexp-match-limit t)))))
-
-  (defun +cc-c-c++-objc-mode (&optional file)
-    "Sets either `c-mode', `objc-mode' or `c++-mode', whichever is appropriate."
-    (let ((base (file-name-sans-extension buffer-file-name))
-          file)
-      (cond ((file-exists-p! (or (concat base ".cpp")
-                                 (concat base ".cc")))
-             (c++-mode))
-            ((fboundp 'c-or-c++-mode) ; introduced in Emacs 26.1
-             (c-or-c++-mode))
-            ((+cc--re-search-for  ; TODO Remove this along with Emacs 25 support
-              (let ((id "[a-zA-Z0-9_]+") (ws "[ \t\r]+") (ws-maybe "[ \t\r]*"))
-                (concat "^" ws-maybe "\\(?:"
-                        "using"     ws "\\(?:namespace" ws "std;\\|std::\\)"
-                        "\\|" "namespace" "\\(:?" ws id "\\)?" ws-maybe "{"
-                        "\\|" "class"     ws id ws-maybe "[:{\n]"
-                        "\\|" "template"  ws-maybe "<.*>"
-                        "\\|" "#include"  ws-maybe "<\\(?:string\\|iostream\\|map\\)>"
-                        "\\)")))
-             (c++-mode))
-            ((c-mode))))))
-
+)
 ;; (use-package srefactor
 ;;   :ensure t
 ;;   :bind (:map c-mode-map
