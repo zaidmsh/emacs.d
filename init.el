@@ -1,6 +1,36 @@
 (setq user-full-name "Zaid Alshathry")
 (setq user-mail-address "zmzshathry@gmail.com")
 
+;; set home and emacs directories
+(defvar user-home-directory (concat (getenv "HOME") "/"))
+(setq user-emacs-directory (concat user-home-directory ".emacs.d/"))
+;; Initialize package
+(require 'package)
+(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
+                         ("melpa" . "http://melpa.org/packages/")))
+(package-initialize)
+
+;; use-package
+(unless (package-installed-p 'use-package)
+  (progn
+    (package-refresh-contents)
+    (package-install 'use-package)))
+
+(require 'use-package)
+
+;; Set My-prefix
+(setq my-prefix "C-c ")
+
+; load directory for configuration files for emacs
+(add-to-list 'load-path (concat user-emacs-directory "setup-files/"))
+
+(require 'setup-which-key)
+(require 'setup-company)
+(require 'setup-lsp)
+(require 'setup-cc)
+(require 'setup-buffers)
+(require 'setup-windows)
+
 (tool-bar-mode -1)
 (menu-bar-mode -1)
 (scroll-bar-mode -1)
@@ -13,7 +43,7 @@
 ;; Highlight currentline
 (global-hl-line-mode 1)
 
-;; Set locale to UTF8
+;; Set locale to UTF-8
 (set-language-environment 'utf-8)
 (set-terminal-coding-system 'utf-8)
 (setq locale-coding-system 'utf-8)
@@ -32,29 +62,7 @@
 ;; In UNIX every file ends with newline
 (setq-default require-final-newline t)
 
-;; Add padding to window edges
-(set-fringe-mode 3)
-
-;; Set My-prefix
-(setq my-prefix "C-c ")
-
-;; Use ibuffer
-(global-set-key (kbd "C-x C-b") 'ibuffer)
 (global-display-line-numbers-mode)
-
-;; Initialize package
-(require 'package)
-(setq package-archives '(("gnu" . "http://elpa.gnu.org/packages/")
-                         ("melpa" . "http://melpa.org/packages/")))
-(package-initialize)
-
-;; use-package
-(unless (package-installed-p 'use-package)
-  (progn
-    (package-refresh-contents)
-    (package-install 'use-package)))
-
-(require 'use-package)
 
 ;; Dashboard
 (use-package dashboard
@@ -194,41 +202,11 @@
   :ensure t)
 
 ;; Company
-(use-package company
-  :ensure t
-  :bind
-  (("M-/" . hippie-expand) ;; replace `dabbrev-expand' with `hippie-expand' which does a lot more
-   ("C-<tab>" . company-dabbrev))
-  (:map company-active-map
-        ("M-p" . nil)
-        ("M-n" . nil)
-        ("C-m" . nil)
-        ("C-h" . nil)
-        ("C-n" . company-select-next)
-        ("C-p" . company-select-previous)
-        ("<tab>" . company-complete-common)
-        ("C-t" . company-show-doc-buffer))
-
-  :config
-  (setq company-tooltip-flip-when-above t)
-  (setq company-minimum-prefix-length 3)
-  (setq company-idle-delay 0.2)
-  (setq company-selection-wrap-around t)
-  (setq company-show-numbers t)
-  (setq company-require-match 'never)
-  (setq company-tooltip-align-annotations t)
-
-  ;; don't downcase results from company-dabbrev
-  (setq company-dabbrev-downcase nil)
-  ;; use only buffers with same major-mode for company-dabbrev
-  (setq company-dabbrev-other-buffers t)
-  (global-company-mode))
 
 (use-package flycheck
   :ensure t
   :config
   (flycheck-mode t))
-
 
 ;; a collection of yasnippet snippets for many languages
 ;; https://github.com/AndreaCrotti/yasnippet-snippets
@@ -278,35 +256,6 @@ _r_eload    e_x_pand    _?_ list    aya _e_xpand
   :defer t
   :bind (("C-c g" . magit-status)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;; C/C++ ;;;;;;;;;;;;;;;;;;;;
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; lsp-mode:  Emacs client/library for the Language Server Protocol
-;; https://github.com/emacs-lsp/lsp-mode
-(use-package lsp-mode
-  :config
-  (setq lsp-rust-rls-command '("rustup" "run" "nightly" "rls"))
-  (add-to-list 'lsp-project-blacklist "^/Users/zaid/Library/Caches/Homebrew/emacs--git/$")
-  (add-to-list 'lsp-project-blacklist "^/Users/zaid/\\.emacs\\.d/$"))
-
-;; company-lsp: Company completion backend for lsp-mode.
-;; https://github.com/tigersoldier/company-lsp/
-(use-package company-lsp
-  :config
-  (push 'company-lsp company-backends))
-
-;; lsp-ui: This contains all the higher level UI modules of lsp-mode, like flycheck support and code lenses.
-;; https://github.com/emacs-lsp/lsp-ui
-(use-package lsp-ui
-  :config
-  (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-  (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
-  (setq lsp-ui-sideline-enable nil
-        lsp-ui-doc-enable nil
-        lsp-ui-flycheck-enable t
-        lsp-ui-imenu-enable t
-        lsp-ui-sideline-ignore-duplicate t))
-
 ;; cmake-font-lock: emacs font lock rules for CMake
 ;; https://github.com/Lindydancer/cmake-font-lock
 (use-package cmake-font-lock
@@ -314,154 +263,6 @@ _r_eload    e_x_pand    _?_ list    aya _e_xpand
   :config
   (autoload 'cmake-font-lock-activate "cmake-font-lock" nil t)
   (add-hook 'cmake-mode-hook 'cmake-font-lock-activate))
-
-;; adds font-lock highlighting for modern C++ upto C++17
-;; https://github.com/ludwigpacifici/modern-cpp-font-lock
-(use-package modern-cpp-font-lock
-  :ensure t
-  :hook (c++-mode . modern-c++-font-lock-mode))
-;; ccls: Emacs client for ccls, a C/C++ language server
-;; https://github.com/MaskRay/emacs-ccls
-(use-package ccls
-  :commands (lsp-css-enable)
-  :init
-;;;###autoload
-  (defvar +ccls-path-mappings [])
-
-;;;###autoload
-  (defvar +ccls-initial-blacklist [])
-
-  (setq ccls-executable (executable-find "/Users/zaid/workspace/ccls/Release/ccls"))
-
-  (setq
-   ccls-extra-init-params
-   `(:clang (:pathMappings ,+ccls-path-mappings)
-            :completion
-            (:includeBlacklist
-             ("^/usr/(local/)?include/c\\+\\+/[0-9\\.]+/(bits|tr1|tr2|profile|ext|debug)/"
-              "^/usr/(local/)?include/c\\+\\+/v1/"
-              ))
-            :index (:initialBlacklist ,+ccls-initial-blacklist :trackDependency 1)))
-  :config
-  ;; enable ccls semantic highlighting
-  (setq ccls-sem-highlight-method 'font-lock)
-
-  (with-eval-after-load 'projectile
-    (add-to-list 'projectile-globally-ignored-directories ".ccls-cache"))
-
- ;; https://github.com/MaskRay/Config/blob/master/home/.config/doom/modules/private/my-cc/autoload.el#L10
-  (defun ccls/callee ()
-    (interactive)
-    (lsp-ui-peek-find-custom 'callee "$ccls/call" '(:callee t)))
-  (defun ccls/caller ()
-    (interactive)
-    (lsp-ui-peek-find-custom 'caller "$ccls/call"))
-  (defun ccls/vars (kind)
-    (lsp-ui-peek-find-custom 'vars "$ccls/vars" `(:kind ,kind)))
-  (defun ccls/base (levels)
-    (lsp-ui-peek-find-custom 'base "$ccls/inheritance" `(:levels ,levels)))
-  (defun ccls/derived (levels)
-    (lsp-ui-peek-find-custom 'derived "$ccls/inheritance" `(:levels ,levels :derived t)))
-  (defun ccls/member (kind)
-    (lsp-ui-peek-find-custom 'member "$ccls/member" `(:kind ,kind)))
-  ;; The meaning of :role corresponds to https://github.com/maskray/ccls/blob/master/src/symbol.h
-
-  ;; References w/ Role::Address bit (e.g. variables explicitly being taken addresses)
-  (defun ccls/references-address ()
-    (interactive)
-    (lsp-ui-peek-find-custom
-     'address "textDocument/references"
-     (plist-put (lsp--text-document-position-params) :context
-                '(:role 128))))
-
-  ;; References w/ Role::Dynamic bit (macro expansions)
-  (defun ccls/references-macro ()
-    (interactive)
-    (lsp-ui-peek-find-custom
-     'address "textDocument/references"
-     (plist-put (lsp--text-document-position-params) :context
-                '(:role 64))))
-
-  ;; References w/o Role::Call bit (e.g. where functions are taken addresses)
-  (defun ccls/references-not-call ()
-    (interactive)
-    (lsp-ui-peek-find-custom
-     'address "textDocument/references"
-     (plist-put (lsp--text-document-position-params) :context
-                '(:excludeRole 32))))
-
-  ;; References w/ Role::Read
-  (defun ccls/references-read ()
-    (interactive)
-    (lsp-ui-peek-find-custom
-     'read "textDocument/references"
-     (plist-put (lsp--text-document-position-params) :context
-                '(:role 8))))
-
-  ;; References w/ Role::Write
-  (defun ccls/references-write ()
-    (interactive)
-    (lsp-ui-peek-find-custom
-     'write "textDocument/references"
-     (plist-put (lsp--text-document-position-params) :context
-                '(:role 16)))))
-
-(defun ccls//enable ()
-  "Enable lsp-ccls"
-  (condition-case nil
-      (lsp-ccls-enable)
-    (user-error nil)))
-
-(use-package cc-mode :ensure nil
-  :hook (((c++-mode c-mode) . (lambda ()
-                                (ccls//enable)
-                                (lsp-ui-mode)
-                                (eldoc-mode)
-                                (lsp-ui-sideline-mode)
-                                (flycheck-mode)
-                                ;; (smart-dash-mode)
-                                (company-mode)
-                                (yas-minor-mode))))
-
-  :config
-
-  (defun my-cc-common-mode-hook()
-    (set (make-local-variable 'company-backends)
-         '((company-lsp company-files :with company-yasnippet)
-           (company-dabbrev-code company-dabbrev))))
-  (add-hook 'c++-mode-hook #'my-cc-common-mode-hook)
-  (add-hook 'c-mode-hook #'my-cc-common-mode-hook)
-
-  (add-hook 'c++-mode-hook (lambda ()
-                             (setq-local company-transformers nil)
-                             (setq-local company-lsp-async t)
-                             (setq-local company-lsp-cache-candidates nil)))
-  (add-hook 'c-mode-hook (lambda ()
-                           (setq-local company-transformers nil)
-                           (setq-local company-lsp-async t)
-                           (setq-local company-lsp-cache-candidates nil)))
-
-  ;;;###autoload
-  (defun +cc|fontify-constants ()
-    "Better fontification for preprocessor constants"
-    (when (memq major-mode '(c-mode c++-mode))
-      (font-lock-add-keywords
-       nil '(("\\<[A-Z]*_[A-Z_]+\\>" . font-lock-constant-face)
-             ("\\<[A-Z]\\{3,\\}\\>"  . font-lock-constant-face))
-       t)))
-
-  ;; (sp-with-modes '(c-mode c++-mode)
-  ;;   (sp-local-pair "/*" "*/" :post-handlers '(("||\n[i]" "RET") ("| " "SPC")))
-  ;;   ;; Doxygen blocks
-  ;;   (sp-local-pair "/**" "*/" :post-handlers '(("||\n[i]" "RET") ("||\n[i]" "SPC")))
-  ;;   (sp-local-pair "/*!" "*/" :post-handlers '(("||\n[i]" "RET") ("[d-1]< | " "SPC"))))
-)
-;; (use-package srefactor
-;;   :ensure t
-;;   :bind (:map c-mode-map
-;;               ("M-RET" . srefactor-refactor-at-point))
-;;   :bind (:map c++-mode-map
-;;         ("M-RET" . srefactor-refactor-at-point)))
 
 (use-package cmake-mode
   :mode (("CMakeLists\\.txt" . cmake-mode)
@@ -523,52 +324,6 @@ _r_eload    e_x_pand    _?_ list    aya _e_xpand
   ("C-<" . mc/mark-previous-like-this)
   ("C-c C-<" . mc/mark-all-like-this))
 
-(use-package ace-window
-  :ensure t)
-
-(defun my/split-window-right-and-move()
-  "Split window to the right and move to it"
-  (interactive)
-  (split-window-right)
-  (windmove-right))
-
-(defun my/split-window-below-and-move()
-  "Split window to the below and move to it"
-  (interactive)
-  (split-window-below)
-  (windmove-down))
-
-;; windows command keymap
-(setq my-window-prefix (concat my-prefix "w"))
-;; Bind window commands
-(bind-keys :map global-map
-           :prefix-map my-window-map
-           :prefix my-window-prefix
-           ("f n" . make-frame)
-           ("f d" . delete-frame)
-           ("f D" . delete-other-frames)
-           ("f o" . other-frame)
-           ("s" . split-window-below)
-           ("v" . split-window-right)
-           ("S" . my/split-window-below-and-move)
-           ("V" . my/split-window-right-and-move)
-           ("d" . delete-window)
-           ("D" . ace-delete-window)
-           ("o" . ace-window)
-           ("M" . ace-swap-window)
-           ("h" . windmove-left)
-           ("j" . windmove-down)
-           ("k" . windmove-up)
-           ("l" . windmove-right))
-
-(which-key-add-key-based-replacements
-  my-window-prefix "windows"
-  (concat my-window-prefix "S") "split-window-below-and-move"
-  (concat my-window-prefix "V") "split-window-right-and-move"
-  (concat my-window-prefix "d") "delete-current-window"
-  (concat my-window-prefix "D") "delete-window"
-  (concat my-window-prefix "o") "other-window"
-  (concat my-window-prefix "M") "swap-window")
 
 ;; search command keymap
 (setq my-search-prefix (concat my-prefix "s"))
@@ -617,14 +372,6 @@ _r_eload    e_x_pand    _?_ list    aya _e_xpand
   (set-face-attribute 'region nil :background "#666")
   (setq nlinum-highlight-current-line t))
 
-(use-package doom-modeline
-      :ensure t
-      :defer t
-      :hook (after-init . doom-modeline-init)
-      :config
-      (setq mode-line-modes t))
-
-
 ;; Dimmer: visually highlight the selected window
 (use-package dimmer
   :ensure t
@@ -636,13 +383,6 @@ _r_eload    e_x_pand    _?_ list    aya _e_xpand
   :ensure t
   :config
   (smooth-scrolling-mode))
-
-;; bring up help for key bindings
-(use-package which-key
-  :ensure t
-  :config
-  (setq which-key-enable-extended-define-key t)
-  (which-key-mode))
 
 ;; Org-bullets
 (use-package org-bullets
@@ -660,6 +400,7 @@ _r_eload    e_x_pand    _?_ list    aya _e_xpand
   (push '("*Apropos*" :noselect nil) popwin:special-display-config)
   (push '("*Macroexpansion*" :noselect nil :stick t :dedicated t) popwin:special-display-config)
   (popwin-mode 1))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
