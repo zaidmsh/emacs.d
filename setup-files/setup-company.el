@@ -11,7 +11,8 @@
         ("C-n" . company-select-next)
         ("C-p" . company-select-previous)
         ("<tab>" . company-complete-common)
-        ("C-t" . company-show-doc-buffer))
+        ("C-t" . company-show-doc-buffer)
+        ("<enter>" . company-selection))
 
   :config
   (setq company-tooltip-flip-when-above t)

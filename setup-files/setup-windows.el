@@ -48,4 +48,14 @@
   (concat my-window-prefix "o") "other-window"
   (concat my-window-prefix "M") "swap-window")
 
+(use-package popwin
+  :ensure t
+  :bind ("C-h e" . popwin:messages)
+  :bind-keymap ("C-z" . popwin:keymap)
+  :config
+  (push '("*Help*" :noselect nil) popwin:special-display-config)
+  (push '("*Apropos*" :noselect nil) popwin:special-display-config)
+  (push '("*Macroexpansion*" :noselect nil :stick t :dedicated t) popwin:special-display-config)
+  (popwin-mode 1))
+
 (provide 'setup-windows)
