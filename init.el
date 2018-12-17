@@ -85,7 +85,7 @@
  ;; If there is more than one, they won't work right.
  '(package-selected-packages
    (quote
-    (spinner clang-format ccls rg lsp-mode modern-cpp-font-lock cmake-font-lock yasnippet-snippets yaml-mode which-key use-package undo-tree treemacs-projectile systemd smooth-scrolling smex smartparens popwin org-bullets multiple-cursors magit lsp-ui doom-themes doom-modeline dimmer dashboard cquery counsel-projectile company-lsp company-go ag))))
+    (go-snippets spinner clang-format ccls rg lsp-mode modern-cpp-font-lock cmake-font-lock yasnippet-snippets yaml-mode which-key use-package undo-tree treemacs-projectile systemd smooth-scrolling smex smartparens popwin org-bullets multiple-cursors magit lsp-ui doom-themes doom-modeline dimmer dashboard cquery counsel-projectile company-lsp company-go ag))))
 (custom-set-faces
  ;; custom-set-faces was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.

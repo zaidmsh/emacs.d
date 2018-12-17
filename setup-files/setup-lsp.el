@@ -2,17 +2,16 @@
 ;; https://github.com/emacs-lsp/lsp-mode
 (use-package lsp-mode
   :ensure t
-  :config
-  (setq lsp-auto-guess-root t)
-  (require 'lsp user-emacs-directory "/elpa/lsp-mode*"))
+  :commands lsp
+  :config (require 'lsp-clients))
 
 ;; company-lsp: Company completion backend for lsp-mode.
 ;; https://github.com/tigersoldier/company-lsp/
 (use-package company-lsp
   :ensure t
+  :commands company-lsp
   :config
-  (push 'company-lsp company-backends)
-  (setq company-transformers nil company-lsp-cache-candidates nil))
+  (push 'company-lsp company-backends))
 
 ;; lsp-ui: This contains all the higher level UI modules of lsp-mode, like flycheck support and code lenses.
 ;; https://github.com/emacs-lsp/lsp-ui

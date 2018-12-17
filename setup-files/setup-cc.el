@@ -4,11 +4,17 @@
      :ensure t
      :hook(c++-mode . modern-c++-font-lock-mode))
 
+(use-package clang-format
+  :ensure t
+  :config
+  (setq clang-format-style "LLVM"))
+
 ; ccls: Emacs client for ccls, a C/C++ language server
 ; https://github.com/MaskRay/emacs-ccls
-
 (use-package ccls
   :ensure t
+  :hook ((c-mode c++-mode) .
+         (lambda () (require 'ccls) (lsp)))
   :init
   (setq ccls-executable (executable-find "ccls"))
   :config
@@ -16,6 +22,9 @@
   (setq ccls-sem-highlight-method 'font-lock)
   (with-eval-after-load 'projectile
     (add-to-list 'projectile-globally-ignored-directories ".ccls-cache"))
+  ;; Enable fuzzy maching on Company
+
+  (setq company-transformers nil company-lsp-async t company-lsp-cache-candidates nil)
 
   (defun ccls/callee () (interactive) (lsp-ui-peek-find-custom "$ccls/call" '(:callee t)))
   (defun ccls/caller () (interactive) (lsp-ui-peek-find-custom "$ccls/call"))
@@ -23,24 +32,27 @@
   (defun ccls/base (levels) (lsp-ui-peek-find-custom "$ccls/inheritance" `(:levels ,levels)))
   (defun ccls/derived (levels) (lsp-ui-peek-find-custom "$ccls/inheritance" `(:levels ,levels :derived t)))
   (defun ccls/member (kind) (interactive) (lsp-ui-peek-find-custom "$ccls/member" `(:kind ,kind)))
+  ;; References w/ Role::Role
+  (defun ccls/references-read () (interactive)
+         (lsp-ui-peek-find-custom "textDocument/references"
+                                  (plist-put (lsp--text-document-position-params) :role 8)))
+  ;; References w/ Role::Write
+  (defun ccls/references-write () (interactive)
+    (lsp-ui-peek-find-custom "textDocument/references"
+                             (plist-put (lsp--text-document-position-params) :role 16)))
+  ;; References w/ Role::Dynamic bit (macro expansions)
+  (defun ccls/references-macro () (interactive)
+         (lsp-ui-peek-find-custom "textDocument/references"
+                                  (plist-put (lsp--text-document-position-params) :role 64)))
+  ;; References w/o Role::Call bit (e.g. where functions are taken addresses)
+  (defun ccls/references-not-call () (interactive)
+         (lsp-ui-peek-find-custom "textDocument/references"
+                                  (plist-put (lsp--text-document-position-params) :excludeRole 32))))
 
-  ;; (lsp-ui-peek-find-references nil (list :folders (vector (projectile-project-root))))
-  (setq company-transformers nil company-lsp-async t company-lsp-cache-candidates nil))
+;; (use-package cc-mode
 
-(use-package clang-format
-  :ensure t
-  :config
-  (setq clang-format-style "LLVM"))
-
-(defun ccls-enable ()
-  (when buffer-file-name
-    (require 'ccls)
-      (lsp)))
-
-(use-package cc-mode
-  :hook ((c-mode c++-mode) . ccls-enable)
-  :init 
-  (setq c-basic-offset 4))
+;;   :config
+;;   (setq c-basic-offset 4))
 
 ;; cmake-font-lock: emacs font lock rules for CMake
 ;; https://github.com/Lindydancer/cmake-font-lock

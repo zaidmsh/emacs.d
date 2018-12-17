@@ -12,11 +12,11 @@
         ("C-p" . company-select-previous)
         ("<tab>" . company-complete-common)
         ("C-t" . company-show-doc-buffer)
-        ("<enter>" . company-selection))
+        ("<return>" . company-selection))
 
   :config
   (setq company-tooltip-flip-when-above t)
-  (setq company-minimum-prefix-length 3)
+  (setq company-minimum-prefix-length 2)
   (setq company-idle-delay 0.2)
   (setq company-selection-wrap-around t)
   (setq company-show-numbers t)
