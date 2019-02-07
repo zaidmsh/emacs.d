@@ -1,8 +1,6 @@
 (use-package company
   :ensure t
   :bind
-  (("M-/" . hippie-expand-expand) ;; replace `dabbrev-expand' with `hippie-expand' which does a lot more
-   ("C-<tab>" . company-dabbrev))
   (:map company-active-map
         ("M-p" . nil)
         ("M-n" . nil)
@@ -11,8 +9,8 @@
         ("C-n" . company-select-next)
         ("C-p" . company-select-previous)
         ("<tab>" . company-complete-common)
-        ("C-t" . company-show-doc-buffer)
-        ("<return>" . company-selection))
+        ("C-t" . company-show-doc-buffer))
+
 
   :config
   (setq company-tooltip-flip-when-above t)
