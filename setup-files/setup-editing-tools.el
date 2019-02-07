@@ -20,3 +20,4 @@
   (global-undo-tree-mode))
 
 (provide 'setup-editing-tools)
+

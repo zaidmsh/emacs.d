@@ -14,7 +14,7 @@
 
 (which-key-add-key-based-replacements
   my-buffer-prefix "buffer"
-  (concat my-buffer-prefix "D") "kill-buffer-and-window"
+  (concat my-buffer-prefix "k") "kill-buffer-and-window"
   (concat my-buffer-prefix "n") "next-buffer"
   (concat my-buffer-prefix "p") "previous-buffer")
 

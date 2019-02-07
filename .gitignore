@@ -4,4 +4,7 @@ elpa/
 .projectile
 projectile*
 recentf
+.cache/
+.lsp-session
+smex-items
 *~
