@@ -4,22 +4,33 @@
   :config
   (dashboard-setup-startup-hook))
 
-;; doom-theme
-(use-package doom-themes
+(use-package zenburn-theme
   :ensure t
   :config
-  (load-theme 'doom-vibrant t)
-  (doom-themes-visual-bell-config)
-  (doom-themes-treemacs-config)
-  (doom-themes-org-config)
-  (set-face-attribute 'region nil :background "#666")
-  (setq nlinum-highlight-current-line t))
+  (load-theme 'zenburn t))
+
+(use-package telephone-line
+  :ensure t
+  :config
+  (setq telephone-line-lhs
+        '((evil   . (telephone-line-evil-tag-segment))
+          (accent . (telephone-line-vc-segment
+                     telephone-line-erc-modified-channels-segment
+                     telephone-line-process-segment))
+          (nil    . (telephone-line-minor-mode-segment
+                     telephone-line-buffer-segment))))
+  (setq telephone-line-rhs
+        '((nil    . (telephone-line-misc-info-segment))
+          (accent . (telephone-line-major-mode-segment))
+          (evil   . (telephone-line-airline-position-segment))))
+  (telephone-line-mode 1))
+
 
 ;; Dimmer: visually highlight the selected window
 (use-package dimmer
   :ensure t
   :config
-  (setq dimmer-fraction 0.20)
+  (setq dimmer-fraction 0.50)
   (dimmer-mode))
 
 (use-package smooth-scrolling

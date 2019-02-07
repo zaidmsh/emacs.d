@@ -11,7 +11,6 @@
         ("<tab>" . company-complete-common)
         ("C-t" . company-show-doc-buffer))
 
-
   :config
   (setq company-tooltip-flip-when-above t)
   (setq company-minimum-prefix-length 2)
