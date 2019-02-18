@@ -1,19 +1,26 @@
 ;; Golang
 (use-package go-mode
-  :ensure t
+  :commands go-mode
+  :mode (("\\.go?\\'" . go-mode))
+  :init
+  (add-hook 'go-mode-hook #'lsp)
+  :defer t
   :config
-  (add-hook 'before-save #'gofmt-before-save))
+  (setq indent-tabs-mode nil)
+  (setq c-basic-offset 4)
+  (setq tab-width 4)
+  (add-hook 'before-save-hook 'lsp-format-buffer))
 
-(use-package company-go
-    :ensure t
-    :config
-    :hook (go-mode . (lambda ()
-                            (add-to-list 'company-backends 'company-go))))
+;; (use-package company-go
+;;     :ensure t
+;;     :config
+;;     :hook (go-mode . (lambda ()
+;;                             (add-to-list 'company-backends 'company-go))))
 
-(use-package go-eldoc
-  :ensure t)
+;; (use-package go-eldoc
+;;   :ensure t)
 
-(use-package go-snippets
-  :ensure t)
+;; (use-package go-snippets
+;;   :ensure t)
 
 (provide 'setup-golang)

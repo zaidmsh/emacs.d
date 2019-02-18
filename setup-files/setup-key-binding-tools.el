@@ -10,6 +10,7 @@
   :ensure t
   :config
   (setq which-key-enable-extended-define-key t)
-  (which-key-mode))
+;  (which-key-mode)
+  )
 
 (provide 'setup-key-binding-tools)

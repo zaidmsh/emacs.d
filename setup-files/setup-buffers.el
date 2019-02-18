@@ -1,7 +1,6 @@
 ;; Use ibuffer
 (global-set-key (kbd "C-x C-b") 'ibuffer)
 
-
 ;; buffers command keymap
 (setq my-buffer-prefix (concat my-prefix "b"))
 ;; Bind window commands
