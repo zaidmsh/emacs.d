@@ -1,6 +1,7 @@
 ;; ivy
 (use-package ivy
   :ensure t
+  :defer t
   :bind (("C-s" . swiper))
   :config
   (setq ivy-use-virtual-buffers t)

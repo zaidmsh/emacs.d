@@ -10,16 +10,15 @@
         ("C-p" . company-select-previous)
         ("<tab>" . company-complete-common)
         ("C-t" . company-show-doc-buffer))
-
+  
   :config
   (setq company-tooltip-flip-when-above t)
   (setq company-minimum-prefix-length 2)
   (setq company-idle-delay 0.2)
   (setq company-selection-wrap-around t)
-  (setq company-show-numbers t)
+  (setq company-show-numbers t)         
   (setq company-require-match 'never)
   (setq company-tooltip-align-annotations t)
-
   ;; don't downcase results from company-dabbrev
   (setq company-dabbrev-downcase nil)
   ;; use only buffers with same major-mode for company-dabbrev

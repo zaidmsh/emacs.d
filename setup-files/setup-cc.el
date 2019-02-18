@@ -13,8 +13,6 @@
 ; https://github.com/MaskRay/emacs-ccls
 (use-package ccls
   :ensure t
-  :hook ((c-mode c++-mode) .
-         (lambda () (require 'ccls) (lsp)))
   :init
   (setq ccls-executable (executable-find "ccls"))
   :config
@@ -22,8 +20,8 @@
   (setq ccls-sem-highlight-method 'font-lock)
   (with-eval-after-load 'projectile
     (add-to-list 'projectile-globally-ignored-directories ".ccls-cache"))
-  ;; Enable fuzzy maching on Company
 
+  ;; Enable fuzzy maching on Company
   (setq company-transformers nil company-lsp-async t company-lsp-cache-candidates nil)
 
   (defun ccls/callee () (interactive) (lsp-ui-peek-find-custom "$ccls/call" '(:callee t)))
@@ -49,10 +47,14 @@
          (lsp-ui-peek-find-custom "textDocument/references"
                                   (plist-put (lsp--text-document-position-params) :excludeRole 32))))
 
-;; (use-package cc-mode
+(use-package cc-mode
+  :hook ((c-mode c++-mode) .
+         (lambda () (require 'ccls) (lsp)))
+  :config
+  (setq indent-tabs-mode nil)
+  (setq c-basic-offset 4)
+  (setq tab-width 4))
 
-;;   :config
-;;   (setq c-basic-offset 4))
 
 ;; cmake-font-lock: emacs font lock rules for CMake
 ;; https://github.com/Lindydancer/cmake-font-lock
