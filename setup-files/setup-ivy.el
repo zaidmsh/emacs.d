@@ -13,7 +13,7 @@
   :bind
   ("M-x" . counsel-M-x)
   ("C-x C-f" . counsel-find-file)
-  ("<f6>" . ivy-resume)
+  ("C-c C-r" . ivy-resume)
   ("<f1> f" . counsel-describe-function)
   ("<f1> v" . counsel-describe-variable)
   ("<f1> l" . counsel-find-library)

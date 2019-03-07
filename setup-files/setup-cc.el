@@ -1,14 +1,4 @@
 ; adds font-lock highlighting for modern C++ upto C++17
-;;https : // github.com/ludwigpacifici/modern-cpp-font-lock
-(use-package modern-cpp-font-lock
-     :ensure t
-     :hook(c++-mode . modern-c++-font-lock-mode))
-
-(use-package clang-format
-  :ensure t
-  :config
-  (setq clang-format-style "LLVM"))
-
 ; ccls: Emacs client for ccls, a C/C++ language server
 ; https://github.com/MaskRay/emacs-ccls
 (use-package ccls
@@ -17,7 +7,7 @@
   (setq ccls-executable (executable-find "ccls"))
   :config
   (setq ccls-initialization-options '(:index (:comments 2) :completion (:detailedLabel t)))
-  (setq ccls-sem-highlight-method 'font-lock)
+  (setq ccls-sem-highlight-method 'overlay)
   (with-eval-after-load 'projectile
     (add-to-list 'projectile-globally-ignored-directories ".ccls-cache"))
 
@@ -47,14 +37,16 @@
          (lsp-ui-peek-find-custom "textDocument/references"
                                   (plist-put (lsp--text-document-position-params) :excludeRole 32))))
 
+(use-package uncrustify-mode
+  :ensure t)
+
 (use-package cc-mode
   :hook ((c-mode c++-mode) .
-         (lambda () (require 'ccls) (lsp)))
+          (lambda () (require 'ccls) (lsp)))
   :config
   (setq indent-tabs-mode nil)
   (setq c-basic-offset 4)
   (setq tab-width 4))
-
 
 ;; cmake-font-lock: emacs font lock rules for CMake
 ;; https://github.com/Lindydancer/cmake-font-lock
@@ -74,4 +66,3 @@
   (push 'company-cmake company-backends))
 
 (provide 'setup-cc)
-

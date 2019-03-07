@@ -16,8 +16,11 @@
 (use-package undo-tree
   :ensure t
   :bind ("C-c u" . undo-tree-visualize)
+  :init (global-undo-tree-mode)
   :config
-  (global-undo-tree-mode))
+  (setq undo-tree-visualizer-timestamps t
+        undo-tree-visualizer-diff t))
+
 
 (provide 'setup-editing-tools)
 
