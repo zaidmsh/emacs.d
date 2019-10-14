@@ -22,5 +22,9 @@
          ("\\.path" . systemd-mode)
          ("\\.target" . system-mode)))
 
+;; Protocol Buffer
+(use-package protobuf-mode
+  :ensure t
+  :mode ("\\.proto" . protobuf-mode))
 
 (provide 'setup-non-programming-langs-modes)

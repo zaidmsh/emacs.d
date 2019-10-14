@@ -22,6 +22,10 @@
   ("M-y" . counsel-yank-pop)
   ("C-c i" . counsel-imenu))
 
+(use-package ivy-xref
+  :ensure t
+  :init (setq xref-show-xrefs-function #'ivy-xref-show-xrefs))
+
 (use-package smex
   :ensure t
   :config

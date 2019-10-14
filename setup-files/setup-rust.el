@@ -5,9 +5,7 @@
   :init
   (add-hook 'rust-mode-hook #'lsp)
   :hook (cargo-minor-mode)
-  :defer t
-  :config
-  (add-hook 'before-save-hook 'lsp-format-buffer))
+  :defer t)
 
 (use-package cargo
   :ensure t)
