@@ -10,12 +10,12 @@
   :config
   (load-theme 'zenburn t))
 
-;; Dimmer: visually highlight the selected window
-(use-package dimmer
-  :ensure t
-  :config
-  (setq dimmer-fraction 0.50)
-  (dimmer-mode))
+;; ;; Dimmer: visually highlight the selected window
+;; (use-package dimmer
+;;   :ensure t
+;;   :config
+;;   (setq dimmer-fraction 0.50)
+;;   (dimmer-mode))
 
 (use-package smooth-scrolling
   :ensure t

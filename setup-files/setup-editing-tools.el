@@ -1,4 +1,5 @@
 (use-package smartparens
+  :diminish smartparens-mode
   :ensure t
   :config
   (smartparens-global-mode t))
@@ -14,6 +15,7 @@
 
 ;; undo-tree
 (use-package undo-tree
+  :diminish undo-tree-mode
   :ensure t
   :bind ("C-c u" . undo-tree-visualize)
   :init (global-undo-tree-mode)

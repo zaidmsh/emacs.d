@@ -3,28 +3,78 @@
 (use-package lsp-mode
   :ensure t
   :commands lsp
-  :config (require 'lsp-clients))
-
-;; company-lsp: Company completion backend for lsp-mode.
-;; https://github.com/tigersoldier/company-lsp/
-(use-package company-lsp
-  :ensure t
-  :commands company-lsp
+  :hook ((go-mode c-mode c++-mode python-mode rust-mode) . lsp)
   :config
-  (push 'company-lsp company-backends))
+  (require 'lsp-clients)
+  ;; lsp-ui
+  (use-package lsp-ui
+    :ensure t
+    :hook (lsp-mode . lsp-ui-mode)
+    :custom
+    ;; debug
+    (lsp-print-io nil)
+    (lsp-trace nil)
+    (lsp-print-performance nil)
+    ;; general
+    (lsp-auto-guess-root t)
+    (lsp-document-sync-method 'incremental) ;; none, full, incremental, or nil
+    (lsp-response-timeout 10)
+    (lsp-prefer-flymake t) ;; t(flymake), nil(lsp-ui), or :none
+    ;; lsp-ui-doc
+    (lsp-ui-doc-enable nil)
+    (lsp-ui-doc-header t)
+    (lsp-ui-doc-include-signature nil)
+    (lsp-ui-doc-position 'at-point) ;; top, bottom, or at-point
+    (lsp-ui-doc-max-width 120)
+    (lsp-ui-doc-max-height 30)
+    (lsp-ui-doc-use-childframe t)
+    (lsp-ui-doc-use-webkit t)
+    ;; lsp-ui-flycheck
+    (lsp-ui-flycheck-enable nil)
+    ;; lsp-ui-sideline
+    (lsp-ui-sideline-enable nil)
+    (lsp-ui-sideline-ignore-duplicate t)
+    (lsp-ui-sideline-show-symbol t)
+    (lsp-ui-sideline-show-hover t)
+    (lsp-ui-sideline-show-diagnostics nil)
+    (lsp-ui-sideline-show-code-actions nil)
+    ;; lsp-ui-imenu
+    (lsp-ui-imenu-enable t)
+    (lsp-ui-imenu-kind-position 'top)
+    ;; lsp-ui-peek
+    (lsp-ui-peek-enable t)
+    (lsp-ui-peek-peek-height 20)
+    (lsp-ui-peek-list-width 50)
+    (lsp-ui-peek-fontify 'on-demand) ;; never, on-demand, or always
+    :preface
+    (defun my/toggle-lsp-ui-doc ()
+      (interactive)
+      (if lsp-ui-doc-mode
+          (progn
+            (lsp-ui-doc-mode -1)
+            (lsp-ui-doc--hide-frame))
+        (lsp-ui-doc-mode 1)))
+    :bind
+    ([remap xref-find-definitions] . lsp-ui-peek-find-definitions)
+    ([remap xref-find-references] . lsp-ui-peek-find-references)
+    (:map lsp-mode-map
+          ("C-c i"   . lsp-ui-peek-find-implementation)
+          ("C-c s"   . lsp-ui-sideline-mode)
+          ("C-c d"   . my/toggle-lsp-ui-doc)))
+    
 
-;; lsp-ui: This contains all the higher level UI modules of lsp-mode, like flycheck support and code lenses.
-;; https://github.com/emacs-lsp/lsp-ui
-(use-package lsp-ui
-  :ensure t
-  :hook (lsp-mode . lsp-ui-mode)
-  :config
-  (define-key lsp-ui-mode-map [remap xref-find-definitions] #'lsp-ui-peek-find-definitions)
-  (define-key lsp-ui-mode-map [remap xref-find-references] #'lsp-ui-peek-find-references)
-  (setq lsp-ui-sideline-enable nil
-        lsp-ui-doc-enable t
-        lsp-ui-flycheck-enable t
-        lsp-ui-imenu-enable t))
+    ;; company-lsp
+    (use-package company-lsp
+      :custom
+      (company-lsp-cache-candidates t) ;; auto, t(always using a cache), or nil
+      (company-lsp-async t)
+      (company-lsp-enable-snippet t)
+      (company-lsp-enable-recompletion t)))
 
+(use-package lsp-treemacs
+  :commands lsp-treemacs-errors-list)
+
+(use-package dap-mode
+  :ensure t)
 
 (provide 'setup-lsp)

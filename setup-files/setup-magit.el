@@ -2,10 +2,13 @@
 (use-package magit
   :ensure t
   :defer t
-  :bind (("C-c g s" . magit-status)
-         ("C-c g c" . magit-clone)
-         ("C-c g b" . magit-blame)
-         ("C-c g f" . magit-pull)
-         ("C-c g p" . magit-push)))
+  :bind (("C-x g s" . magit-status)
+         ("C-x g c" . magit-clone)
+         ("C-x g b" . magit-branch)
+         ("C-x g B" . magit-blame)
+         ("C-x g f" . magit-pull)
+         ("C-x g l" . magit-log)
+         ("C-x g t" . magit-tag)
+         ("C-x g p" . magit-push)))
 
 (provide 'setup-magit)

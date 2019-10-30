@@ -1,34 +1,44 @@
 ;; ivy
 (use-package ivy
+  :diminish ivy-mode
   :ensure t
   :defer t
   :bind (("C-s" . swiper))
   :config
   (setq ivy-use-virtual-buffers t)
   (setq ivy-count-format "(%d/%d) ")
-  (ivy-mode 1))
+  (ivy-mode t)
 
-(use-package counsel
-  :ensure t
-  :bind
-  ("M-x" . counsel-M-x)
-  ("C-x C-f" . counsel-find-file)
-  ("C-c C-r" . ivy-resume)
-  ("<f1> f" . counsel-describe-function)
-  ("<f1> v" . counsel-describe-variable)
-  ("<f1> l" . counsel-find-library)
-  ("<f1> i" . counsel-info-lookup-symbol)
-  ("<f1> u" . counsel-unicode-char)
-  ("M-y" . counsel-yank-pop)
-  ("C-c i" . counsel-imenu))
+  (use-package counsel
+    :ensure t
+    :bind
+    ("M-x" . counsel-M-x)
+    ("M-s r" . counsel-rg)
+    ("M-s a" . counsel-ag)
+    ("C-x C-f" . counsel-find-file)
+    ("C-x C-r" . ivy-resume)
+    ("C-h a" . counsel-apropos)
+    ("C-h f" . counsel-describe-function)
+    ("C-h v" . counsel-describe-variable)
+    ("C-h l" . counsel-find-library)
+    ("C-h i" . counsel-info-lookup-symbol)
+    ("C-h u" . counsel-unicode-char)
+    ("M-y" . counsel-yank-pop)
+    ("C-c C-i" . counsel-imenu))
+  (use-package ivy-rich
+    :ensure t
+    :config
+    (ivy-rich-mode t))
 
-(use-package ivy-xref
-  :ensure t
-  :init (setq xref-show-xrefs-function #'ivy-xref-show-xrefs))
+  (use-package ivy-xref
+    :ensure t
+    :init (setq xref-show-xrefs-function #'ivy-xref-show-xrefs))
 
-(use-package smex
-  :ensure t
-  :config
-  (setq smex-history-length 10))
+  (use-package smex
+    :ensure t
+    :config
+    (setq smex-history-length 10)))
+
+
 
 (provide 'setup-ivy)

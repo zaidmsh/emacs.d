@@ -4,6 +4,7 @@
   :ensure t)
 
 (use-package yasnippet
+  :diminish yas-minor-mode
   :commands (yas-minor-mode-on yas-expand yas-expand-snippet yas-lookup-snippet
                                yas-insert-snippet yas-new-snippet yas-visit-snippet-file)
   :requires yasnippet-snippets
