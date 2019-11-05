@@ -1,14 +1,33 @@
 ;; Dashboard
 (use-package dashboard
+  :diminish t
   :ensure t
   :config
-  (dashboard-setup-startup-hook))
+  (dashboard-setup-startup-hook)
+  (setq dashboard-startup-banner 'logo)
+  (setq dashboard-center-content t)
+  (setq dashboard-banner-logo-title "Welcome Back")
+  (setq initial-buffer-choice (lambda () (get-buffer "*dashboard*")))
+  (setq dashboard-items '((recents  . 5)
+                        (bookmarks . 5)
+                        (projects . 5)
+                        (agenda . 5)
+                        (registers . 5))))
 
-;; Zenburn theme
-(use-package zenburn-theme
+(use-package doom-themes
   :ensure t
   :config
-  (load-theme 'zenburn t))
+  (load-theme 'doom-one t)
+  (setq doom-themes-enable-bold t
+        doom-themes-enable-italic t)
+  (doom-themes-visual-bell-config)
+  (doom-themes-treemacs-config)
+  (doom-themes-org-config))
+
+(use-package doom-modeline
+  :ensure t
+  :config
+  :hook (after-init . doom-modeline-mode))
 
 ;; ;; Dimmer: visually highlight the selected window
 ;; (use-package dimmer

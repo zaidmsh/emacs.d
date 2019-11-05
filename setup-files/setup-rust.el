@@ -1,9 +1,7 @@
 ;; Rust Programming Language
 (use-package rust-mode
+  :ensure t
   :commands rust-mode
-  :mode ("\\.rs?\\'" . rust-mode)
-  :init
-  (add-hook 'rust-mode-hook #'lsp)
   :hook (cargo-minor-mode)
   :defer t)
 

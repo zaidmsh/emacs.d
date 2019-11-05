@@ -2,10 +2,14 @@
 ;; https://github.com/emacs-lsp/lsp-mode
 (use-package lsp-mode
   :ensure t
-  :commands lsp
-  :hook ((go-mode c-mode c++-mode python-mode rust-mode) . lsp)
+  :hook ((sh-mode go-mode c-mode c++-mode python-mode rust-mode yaml-mode) . lsp-deferred)
+  :commands (lsp lsp-deferred)
   :config
   (require 'lsp-clients)
+  ;; lsp-ivy
+  (use-package helm-lsp
+    :ensure t
+    :bind ("C-c f" . helm-lsp-workspace-symbol))
   ;; lsp-ui
   (use-package lsp-ui
     :ensure t
@@ -19,7 +23,7 @@
     (lsp-auto-guess-root t)
     (lsp-document-sync-method 'incremental) ;; none, full, incremental, or nil
     (lsp-response-timeout 10)
-    (lsp-prefer-flymake t) ;; t(flymake), nil(lsp-ui), or :none
+    (lsp-prefer-flymake nil) ;; t(flymake), nil(lsp-ui), or :none
     ;; lsp-ui-doc
     (lsp-ui-doc-enable nil)
     (lsp-ui-doc-header t)
@@ -28,9 +32,10 @@
     (lsp-ui-doc-max-width 120)
     (lsp-ui-doc-max-height 30)
     (lsp-ui-doc-use-childframe t)
-    (lsp-ui-doc-use-webkit t)
+    (when (display-graphic-p)
+      (lsp-ui-doc-use-webkit t))
     ;; lsp-ui-flycheck
-    (lsp-ui-flycheck-enable nil)
+    (lsp-ui-flycheck-enable t)
     ;; lsp-ui-sideline
     (lsp-ui-sideline-enable nil)
     (lsp-ui-sideline-ignore-duplicate t)
@@ -72,7 +77,9 @@
       (company-lsp-enable-recompletion t)))
 
 (use-package lsp-treemacs
-  :commands lsp-treemacs-errors-list)
+  :ensure t
+  :commands
+  (lsp-treemacs-errors-list))
 
 (use-package dap-mode
   :ensure t)

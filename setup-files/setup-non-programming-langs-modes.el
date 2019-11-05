@@ -1,9 +1,7 @@
 ;; Yaml
 (use-package yaml-mode
   :ensure t
-  :mode "\\.yaml"
-  :bind (:map yaml-mode-map
-              ("<return>" . newline-and-indent)))
+  :mode ("\\.yaml" . yaml-mode))
 
 ;; Markdown
 (use-package markdown-mode
@@ -13,14 +11,14 @@
          ("\\.md'" . markdown-mode)
          ("\\.markdown'" . markdown-mode)))
 
+
 ;; systemd mode
 (use-package systemd
-  :ensure t
-  :config
-  :mode (("\\.service" . systemd-mode)
-         ("\\.timer" . systemd-mode)
-         ("\\.path" . systemd-mode)
-         ("\\.target" . system-mode)))
+  :ensure t)
+  ;; :mode
+  ;; ("\\.service\\'" "\\.timer\\'" "\\.target\\'" "\\.mount\\'"
+  ;;  "\\.automount\\'" "\\.slice\\'" "\\.socket\\'" "\\.path\\'"
+  ;;  "\\.netdev\\'" "\\.network\\'" "\\.link\\'"))
 
 ;; Protocol Buffer
 (use-package protobuf-mode

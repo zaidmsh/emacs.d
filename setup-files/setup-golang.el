@@ -2,8 +2,6 @@
 (use-package go-mode
   :commands go-mode
   :mode (("\\.go?\\'" . go-mode))
-  :init
-  (add-hook 'go-mode-hook #'lsp)
   :defer t
   :config
   (setq indent-tabs-mode nil)

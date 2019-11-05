@@ -1,27 +1,17 @@
-(use-package c-mode
-  :interpreter "C"
+(use-package cc-mode
   :bind (:map c-mode-base-map
-         ("C-x c" . compile))
-  :hook (c-mode-common . (lambda ()
-                            (c-set-style "linux")
-                            (setq tab-width 4)
-                            (setq c-base-offset 4))))
-
-(use-package c++-mode
-  :interpreter "C++"
-  :bind (:map c++-mode-base-map
-         ("C-x c" . compile))
-  :hook (c++-mode-common . (lambda ()
-                            (setq tab-width 4)
-                            (setq c-base-offset 4))))
-
-(use-package ccls
-  :custom
-  (ccls-executable "/root/.local/usr/bin/ccls")
-  (ccls-sem-highlight-method 'font-lock)
+              ("C-x c" . compile))
+  :hook ((c-mode-common c++-mode-common) . (lambda ()
+                                             (c-set-style "linux")
+                                             (setq tab-width 4)
+                                             (setq c-base-offset 4)))
   :config
-  :hook ((c-mode c++-mode) .
-         (lambda () (require 'ccls) (lsp))))
+  (lsp-register-client
+   (make-lsp-client :new-connection (lsp-tramp-connection
+                                     "clangd")
+                    :major-modes '(c-mode c++-mode)
+                    :remote? t
+                    :server-id 'clangd-remote)))
 
 ;; cmake-font-lock: emacs font lock rules for CMake
 ;; https://github.com/Lindydancer/cmake-font-lock

@@ -1,8 +1,8 @@
 ;; Org-bullets
 (use-package org-bullets
-  :ensure t
-  :hook (org-mode-hook . org-bullets-mode)
-  :config
-  (setq org-hide-leading-stars t))
+  :ensure t)
+
+(use-package org-mode
+  :hook (org-mode . org-bullets-mode))
 
 (provide 'setup-org)
