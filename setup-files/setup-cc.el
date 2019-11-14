@@ -2,9 +2,10 @@
   :bind (:map c-mode-base-map
               ("C-x c" . compile))
   :hook ((c-mode-common c++-mode-common) . (lambda ()
-                                             (c-set-style "linux")
-                                             (setq tab-width 4)
-                                             (setq c-base-offset 4)))
+                                             (setq-default c-basic-offset 4
+                                                           tab-width 4
+                                                           indent-tabs-mode nil)))
+
   :config
   (lsp-register-client
    (make-lsp-client :new-connection (lsp-tramp-connection

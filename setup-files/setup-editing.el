@@ -8,9 +8,9 @@
 (use-package multiple-cursors
   :ensure t
   :bind
-  ("C-c m c" . mc/edit-lines)
-  ("C-c m >" . mc/mark-next-like-this)
-  ("C-c m <" . mc/mark-previous-like-this)
+  ("C-c m e" . mc/edit-lines)
+  ("C->" . mc/mark-next-like-this)
+  ("C-<" . mc/mark-previous-like-this)
   ("C-c m a" . mc/mark-all-like-this))
 
 ;; undo-tree

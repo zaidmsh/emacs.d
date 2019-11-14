@@ -3,11 +3,11 @@
   :commands go-mode
   :mode (("\\.go?\\'" . go-mode))
   :defer t
+  :hook (lsp-format-buffer)
   :config
   (setq indent-tabs-mode nil)
   (setq c-basic-offset 4)
-  (setq tab-width 4)
-  (add-hook 'before-save-hook 'lsp-format-buffer))
+  (setq tab-width 4))
 
 ;; (use-package company-go
 ;;     :ensure t

@@ -82,6 +82,13 @@
   (lsp-treemacs-errors-list))
 
 (use-package dap-mode
-  :ensure t)
+  :ensure t
+  :config
+  (dap-mode 1)
+  (dap-ui-mode 1)
+  (dap-tooltip-mode 1)
+  (tooltip-mode 1)
+  (require 'dap-gdb-lldb)
+  (require 'dap-go))
 
 (provide 'setup-lsp)

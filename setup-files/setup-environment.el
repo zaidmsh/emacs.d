@@ -33,7 +33,7 @@
 (setq track-eol t)			; Keep cursor at end of lines.
 (setq line-move-visual nil)		; To be required by track-eol
 (setq-default kill-whole-line t)	; Kill line including '\n'
-(setq-default indent-tabs-mode nil)   ; use space
+(setq-default indent-tabs-mode nil)   ; use spaces
 (setq-default tab-width 4)
 (defalias 'yes-or-no-p #'y-or-n-p)
 
@@ -53,7 +53,6 @@
 ;; Line numbers
 (global-linum-mode 1)
 
-(set-face-attribute 'default nil :font "Monaco")
-
+(set-face-attribute 'default nil :font "Menlo" :height 120)
 
 (provide 'setup-environment)
